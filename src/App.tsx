@@ -1,26 +1,29 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Authenticated, Unauthenticated } from 'convex/react';
+import { SignInButton, SignOutButton, UserButton } from '@clerk/clerk-react';
+import StartScreen from './screens/StartScreen';
+import { api } from './convex/_generated/api';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <main>
+      <Unauthenticated>
+        <SignInButton />
+      </Unauthenticated>
+      <Authenticated>
+        <UserButton />
+        <Content />
+        <SignOutButton />
+      </Authenticated>
+    </main>
   );
 }
+
+function Content() {
+  return (
+    <StartScreen />
+  )
+}
+        
 
 export default App;
