@@ -1,12 +1,13 @@
 import React from "react";
+import { SignInButton } from '@clerk/clerk-react';
 import "../index.css";
 
 export default function StartScreen() {
     return (
-        <>
-    <div className='App'>
-    <div>Authenticated content: User Authenticated</div>    
+    <div className='start'>
+        <text>Sign in to get started</text>
+        <br />
+        <SignInButton />
     </div>
-    </>
     );
 }
