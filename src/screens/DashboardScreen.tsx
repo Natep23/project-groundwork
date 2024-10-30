@@ -1,11 +1,13 @@
 import React from "react";
-import { SignOutButton } from '@clerk/clerk-react';
 import "../index.css";
+import { Card } from "../components/card";
 
 export default function DashboardScreen() {
     return (
         <div className="start">
-            <SignOutButton />
+            <div className="card-container">
+                <Card className="" title="First Card" />
+            </div>
         </div>
     );
 }

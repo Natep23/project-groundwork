@@ -5,9 +5,9 @@ import "../index.css";
 export default function StartScreen() {
     return (
     <div className='start'>
-        <text>Sign in to get started</text>
+        <text>Sign-In To Get Started</text>
         <br />
-        <SignInButton />
+        <SignInButton/>
     </div>
     );
 }
