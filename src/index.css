@@ -3,6 +3,10 @@
   background: linear-gradient(180deg, rgba(171,0,255,1) 0%, rgba(121,9,92,1) 50%, rgba(2,0,36,1) 100%);
   --secondary-background-color: rgba(30, 106, 237, 0.836);
 
+  --dev-dropzone-bkg-color: rgb(170, 59, 122);
+  --res-dropzone-bkg-color: rgb(73, 69, 69);
+  --comp-dropzone-bkg-color: rgb(61, 47, 29);
+
   --primary-text-color: #f1ecec;
   --secondary-text-color: #0a0a0a;
 
@@ -19,6 +23,10 @@
 
   --primary-text-color: #f1ecec;
   --secondary-text-color: #0a0a0a;
+
+  --dev-dropzone-bkg-color: rgb(137, 2, 78);
+  --res-dropzone-bkg-color: rgb(82, 29, 29);
+  --comp-dropzone-bkg-color: rgba(9, 9, 9, 1);
 
   --primary-shadow-color: rgba(51, 46, 46, 0.853);
   --secondary-shadow-color: rgba(92, 40, 82, 0.479);
@@ -114,6 +122,7 @@ header h1{
   justify-items: flex-start;
   margin: 5px;
   padding: 10px;
+  background-color: var(--secondary-background-color);
   /* overflow: hidden; */
 }
 
@@ -128,5 +137,59 @@ header h1{
   color: var(--primary-text-color);
   font-size: large;
   margin: 2px;
-  /* border-bottom : 1px solid rgba(73, 73, 73, 0.521); */
+}
+
+.dev-work-dropzone {
+  position: absolute;
+  width: 85%;
+  height: 45%;
+  border : 1px solid;
+  border-color: var(--primary-shadow-color);
+  border-radius: 8px;
+  align-items: flex-start;
+  top: 18%;
+  background-color: var(--dev-dropzone-bkg-color);
+  box-shadow: 0 4px 8px 0 var(--primary-shadow-color), 0 6px 20px 0 var(--secondary-shadow-color);
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  overflow: scroll;
+}
+
+.dev-work-dropzone::hover {
+  opacity: 0.5;
+}
+
+.research-dropzone {
+  position: absolute;
+  width: 85%;
+  height: 45%;
+  border : 1px solid;
+  border-color: var(--primary-shadow-color);
+  border-radius: 8px;
+  align-items: flex-start;
+  top: 68%;
+  background-color: var(--res-dropzone-bkg-color);
+  box-shadow: 0 4px 8px 0 var(--primary-shadow-color), 0 6px 20px 0 var(--secondary-shadow-color);
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  overflow: scroll;
+}
+
+.completed-dropzone {
+  position: absolute;
+  width: 85%;
+  height: 45%;
+  border : 1px solid;
+  border-color: var(--primary-shadow-color);
+  border-radius: 8px;
+  align-items: flex-start;
+  top: 120%;
+  background-color: var(--comp-dropzone-bkg-color);
+  box-shadow: 0 4px 8px 0 var(--primary-shadow-color), 0 6px 20px 0 var(--secondary-shadow-color);
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  overflow: scroll;
 }
