@@ -14,7 +14,7 @@ type CardProps = {
 export const Card = ({ className, title, draggable, onDragStart, currentStatus, cardColor }: CardProps) => { 
     return (
         <>
-        <div className="card" draggable onDragStart={onDragStart} style={{backgroundColor: cardColor}}>
+        <div className="card" draggable={draggable} onDragStart={onDragStart} style={{backgroundColor: cardColor}}>
             <h1>{title}</h1>
         </div>
         </>

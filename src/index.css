@@ -3,9 +3,9 @@
   background: linear-gradient(180deg, rgba(171,0,255,1) 0%, rgba(121,9,92,1) 50%, rgba(2,0,36,1) 100%);
   --secondary-background-color: rgba(30, 106, 237, 0.836);
 
-  --dev-dropzone-bkg-color: rgb(170, 59, 122);
-  --res-dropzone-bkg-color: rgb(73, 69, 69);
-  --comp-dropzone-bkg-color: rgb(61, 47, 29);
+  --dev-dropzone-bkg-color: rgba(170, 0, 255, 0.238);
+  --res-dropzone-bkg-color: rgba(106, 8, 80, 0.862);
+  --comp-dropzone-bkg-color: rgb(51, 15, 61);
 
   --primary-text-color: #f1ecec;
   --secondary-text-color: #0a0a0a;
@@ -24,9 +24,9 @@
   --primary-text-color: #f1ecec;
   --secondary-text-color: #0a0a0a;
 
-  --dev-dropzone-bkg-color: rgb(137, 2, 78);
-  --res-dropzone-bkg-color: rgb(82, 29, 29);
-  --comp-dropzone-bkg-color: rgba(9, 9, 9, 1);
+  --dev-dropzone-bkg-color: rgb(51, 15, 61);
+  --res-dropzone-bkg-color: rgba(106, 8, 80, 0.862);
+  --comp-dropzone-bkg-color: rgba(170, 0, 255, 0.238);
 
   --primary-shadow-color: rgba(51, 46, 46, 0.853);
   --secondary-shadow-color: rgba(92, 40, 82, 0.479);
@@ -74,7 +74,7 @@ header {
   box-shadow: 0 4px 8px 0 var(--primary-shadow-color), 0 6px 20px 0 var(--secondary-shadow-color);
   justify-content: center;
   width: 100%;
-  height: 30%;
+  height: 100%;
   background-color: var(--primary-background-color);
 }
 
@@ -104,15 +104,16 @@ header h1{
 
 .app-container {
   height: 100vmax;
-  border: #0a0a0a 1px solid;
-  max-height: fit-content;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  
 }
 
 .card-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  margin: 35px;
 }
 
 .card {
@@ -123,7 +124,12 @@ header h1{
   margin: 5px;
   padding: 10px;
   background-color: var(--secondary-background-color);
-  /* overflow: hidden; */
+  cursor: grab;
+}
+
+.card:active {
+  cursor: grabbing;
+  opacity: 0.5;
 }
 
 .card .h1 {
@@ -143,21 +149,24 @@ header h1{
   position: absolute;
   width: 85%;
   height: 45%;
-  border : 1px solid;
-  border-color: var(--primary-shadow-color);
+  border : 1px; 
+  border-color: var(--dev-dropzone-bkg-color);
   border-radius: 8px;
   align-items: flex-start;
-  top: 18%;
+  top: 15%;
   background-color: var(--dev-dropzone-bkg-color);
   box-shadow: 0 4px 8px 0 var(--primary-shadow-color), 0 6px 20px 0 var(--secondary-shadow-color);
   display: flex;
   flex-direction: column;
   opacity: 1;
   overflow: scroll;
+ 
 }
 
-.dev-work-dropzone::hover {
-  opacity: 0.5;
+.dropzone-title {
+  font-weight: bolder;
+  font: 20pt/0 Arial;
+  padding: 0 3px;
 }
 
 .research-dropzone {
