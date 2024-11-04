@@ -62,7 +62,7 @@ code {
   right: 10px;
 }
 
-.theme-button text {
+.theme-button span {
   color: var(--primary-text-color);
 }
 
@@ -95,7 +95,7 @@ header h1{
   height: 100%;
 }
 
-.start text {
+.start span {
   font-size: 30px;
   font-weight: bolder;
   padding: 10px;
@@ -120,11 +120,21 @@ header h1{
   border-radius: 5px;
   border: 1px solid rgba(73, 73, 73, 0.521);
   box-shadow: 0 4px 8px 0 var(--primary-shadow-color), 0 6px 20px 0 var(--secondary-shadow-color);
-  justify-items: flex-start;
+  justify-items: center;
+  min-width: 250px;
+  max-width: 250px;
+  min-height: 300px;
+  max-height: 300px;
   margin: 5px;
   padding: 10px;
   background-color: var(--secondary-background-color);
   cursor: grab;
+  overflow: scroll;
+  overflow-x: hidden;
+}
+
+.card:hover {
+  transform: translateY(-15px);
 }
 
 .card:active {
@@ -139,10 +149,27 @@ header h1{
   padding-bottom: 0px;
 }
 
-.card text {
+.card span {
   color: var(--primary-text-color);
   font-size: large;
   margin: 2px;
+  font-weight: bold;
+}
+
+.card-button {
+  display: flex;
+  flex-direction: column;
+  padding : 10px;
+  width: 100%;
+  margin-top: 8%;
+}
+
+.card-button button {
+  border-radius: 5px;  
+  border: 1px solid var(--primary-background-color);
+  cursor: pointer;
+  font-size: large;
+  font-weight: bold;
 }
 
 .dev-work-dropzone {

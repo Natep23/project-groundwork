@@ -31,7 +31,7 @@ function App() {
   const Themebutton = ({onClick, className}: ThemeBtnProps) => { 
     return (
         <button onClick={onClick} className={className}>
-          <text>{themebtn} Mode</text>
+          <span>{themebtn} Mode</span>
         </button>
     );
 }
