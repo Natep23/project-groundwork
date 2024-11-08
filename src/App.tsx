@@ -3,7 +3,6 @@ import { Authenticated, Unauthenticated } from 'convex/react';
 import StartScreen from './screens/StartScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import { Header } from './components/header';
-import { p } from '@clerk/clerk-react/dist/useAuth-DT1ot2zi';
 // import { api } from './convex/_generated/api';
 
 type ThemeBtnProps = {

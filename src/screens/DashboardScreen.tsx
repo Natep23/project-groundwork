@@ -1,34 +1,41 @@
 import React from "react";
 import "../index.css";
-import { Card } from "../components/card";
+import { CardProps } from "../components/card";
+import { Dropzone } from "../components/Dropzone";
 
 export default function DashboardScreen() {
-    const [devCards, setDevCards] = React.useState([ {
+    const [devCards, setDevCards] = React.useState<CardProps[]>([ {
        title : "Card 1",
-       color : "red",
+       cardColor : "red",
        description : "This is a description of card 1",
+       phase: "In Progress",
     },
     {
         title : "A Really Long Title",
-        color : "magenta",
+        cardColor : "magenta",
+        phase: "In Progress",
         description : "This is a description of card with a very long title. Going on a little bit longer. This is a description of card with a very long title. Going on a little bit longer.",
+        
     }, 
     {
         title : "One With No Color",
+        phase: "In Progress",
         description : "This is a description of a card with no set color",
     }
     ]);
 
-    const [researchCards, setResearchCards] = React.useState([{ 
+    const [researchCards, setResearchCards] = React.useState<CardProps[]>([{ 
         title: "Card 2",
-        color: "teal",
+        cardColor: "teal",
+        phase: "Research",
         description: "This is a description of card 2",
     }
     ]);
 
-    const [completedCards, setCompletedCards] = React.useState([{
+    const [completedCards, setCompletedCards] = React.useState<CardProps[]>([{
         title: "Card 3",
-        color: "green",
+        cardColor: "green",
+        phase: "Completed",
         description: "This is a description of card 3",
     }
     ]);
@@ -45,8 +52,9 @@ export default function DashboardScreen() {
 
     const handleOnDrag = (e: React.DragEvent, card: any) => {
         e.dataTransfer.setData("title", card.title);
-        e.dataTransfer.setData("color", card.color);
+        e.dataTransfer.setData("color", card.cardColor);
         e.dataTransfer.setData("description", card.description);
+        e.dataTransfer.setData("phase", card.phase);
         e.dataTransfer.dropEffect = "none"   
     }
 
@@ -54,9 +62,10 @@ export default function DashboardScreen() {
         const cardId = e.dataTransfer.getData("title") as string;
         const cardColor = e.dataTransfer.getData("color") as string;
         const description = e.dataTransfer.getData("description") as string;
+        const phase = e.dataTransfer.getData("phase") as CardProps["phase"];
         console.log("Card ID:", cardId);
         if (cardExists(devCards, {title: cardId, color: cardColor})) return;
-        setDevCards([ ...devCards, {title: cardId, color: cardColor, description} ]);
+        setDevCards([ ...devCards, {title: cardId, cardColor: cardColor, description , phase: phase} ]);
         setResearchCards(removeCard(researchCards, {title: cardId}));
         setCompletedCards(removeCard(completedCards, {title: cardId}));
 
@@ -66,9 +75,10 @@ export default function DashboardScreen() {
         const cardId = e.dataTransfer.getData("title") as string;
         const cardColor = e.dataTransfer.getData("color") as string;
         const description = e.dataTransfer.getData("description") as string;
+        const phase = e.dataTransfer.getData("phase") as CardProps["phase"];
         console.log("Card ID:", cardId);
         if (cardExists(researchCards, {title: cardId, color: cardColor})) return;
-        setResearchCards([...researchCards, {title: cardId, color: cardColor, description} ]);
+        setResearchCards([...researchCards, {title: cardId, cardColor: cardColor, description, phase: phase} ]);
         setDevCards(removeCard(devCards, {title: cardId, color: cardColor}));
         setCompletedCards(removeCard(completedCards, {title: cardId, color: cardColor}));
     }
@@ -77,67 +87,50 @@ export default function DashboardScreen() {
         const cardId = e.dataTransfer.getData("title") as string;
         const cardColor = e.dataTransfer.getData("color") as string;
         const description = e.dataTransfer.getData("description") as string;
+        const phase = e.dataTransfer.getData("phase") as CardProps["phase"];
         console.log("Card ID:", cardId);
         if (cardExists(completedCards, {title: cardId, color: cardColor})) return;
-        setCompletedCards([...completedCards,{title: cardId, color: cardColor, description} ]);
+        setCompletedCards([...completedCards,{title: cardId, cardColor: cardColor, description, phase:phase} ]);
         setDevCards(removeCard(devCards, {title: cardId, color: cardColor}));
         setResearchCards(removeCard(researchCards, {title: cardId, color: cardColor}));
     }
 
     const handleOnDragOver = (e: React.DragEvent) => {
         e.preventDefault();
-
     }
+
     return (
         <div className="start">
-            <fieldset className="dev-work-dropzone" onDrop={handleOnDevDrop} onDragOver={handleOnDragOver}>
-                <legend className="dropzone-title">Dev Work</legend>
-                <div className="card-container">
-                    {devCards.map((card, index) => (
-                        <Card 
-                            key={index} 
-                            title={card.title} 
-                            description={card.description}
-                            cardColor={card.color} 
-                            onDragStart={(e) => handleOnDrag(e, card)}
-                            phase="In Progress" 
-                            draggable
-                         />
-                    ))}
-                </div>
-            </fieldset>
-            <fieldset className="research-dropzone" onDrop={handleOnResearchDrop} onDragOver={handleOnDragOver}>
-                <legend className="dropzone-title">Research</legend>
-                <div className="card-container">
-                    {researchCards.map((card, index) => (
-                        <Card 
-                            key={index} 
-                            title={card.title} 
-                            description={card.description}
-                            cardColor={card.color}  
-                            onDragStart={(e) => handleOnDrag(e, card)}
-                            phase="Research"
-                            draggable
-                        />
-                    ))}
-                </div>
-            </fieldset>
-            <fieldset className="completed-dropzone" onDrop={handleOnCompletedDrop} onDragOver={handleOnDragOver}>
-                <legend className="dropzone-title">Completed</legend>
-                <div className="card-container">
-                    {completedCards.map((card, index) => (
-                        <Card 
-                            key={index} 
-                            title={card.title} 
-                            description={card.description}
-                            cardColor={card.color}  
-                            onDragStart={(e) => handleOnDrag(e, card)} 
-                            phase="Completed"
-                            draggable
-                        />
-                    ))}
-                </div>   
-            </fieldset>
+            <Dropzone
+                className="dev-work-dropzone"
+                cardStatus="In Progress"
+                list={devCards}
+                onDrop={handleOnDevDrop}
+                onDragOver={handleOnDragOver}
+                onDragStart={handleOnDrag}
+                dropzoneTitle="Development" 
+                hasTaskCard={false}
+                />
+            <Dropzone
+                className="research-dropzone"
+                cardStatus="Research"
+                list={researchCards}
+                onDrop={handleOnResearchDrop}
+                onDragOver={handleOnDragOver}
+                onDragStart={handleOnDrag}
+                dropzoneTitle="Research" 
+                hasTaskCard={false}
+                />
+            <Dropzone
+                className="completed-dropzone"
+                cardStatus="Completed"
+                list={completedCards}
+                onDrop={handleOnCompletedDrop}
+                onDragOver={handleOnDragOver}
+                onDragStart={handleOnDrag}
+                dropzoneTitle="Completed" 
+                hasTaskCard={false}
+                />
         </div>
     );
 }
