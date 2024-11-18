@@ -33,9 +33,6 @@ export default function DashboardScreen() {
    
     const handleOnDrag = (e: React.DragEvent, card: any) => {
         e.dataTransfer.setData("title", card.title);
-        e.dataTransfer.setData("color", card.color);
-        e.dataTransfer.setData("description", card.description);
-        e.dataTransfer.setData("phase", card.phase);
         e.dataTransfer.setData("Id", card._id as Id<"Cards">)
         
         e.dataTransfer.dropEffect = "none"
