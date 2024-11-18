@@ -21,3 +21,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+src/server/DevCalls.tsx
+src/server/ResearchCalls.tsx
+src/server/CompletedCalls.tsx
+src/convex/schema.ts
+src/convex/ProjectCards.tsx
+src/convex/_generated/dataModel.d.ts
+src/convex/_generated/dataModel.d.ts

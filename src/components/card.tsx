@@ -1,20 +1,24 @@
 import React from "react";
 import "../index.css";
+import { Id } from "../convex/_generated/dataModel";
 // import { api } from "../convex/_generated/api";
 
 export type CardProps = {
     className?: string;
     title?: string;
-    cardColor?: string
+    color?: string
     description?: string
     draggable?: true
     isTaskCard?: true
+    _id?: Id<"Cards">
     phase: "Research" | "In Progress" | "Completed"
+    _creationTime?: number
+    previousPhase?: "Research" | "In Progress" | "Completed"
     onDragStart?: (e: React.DragEvent) => void
     
 };
 
-export const Card = ({ className, title, draggable, onDragStart, cardColor, description, phase, isTaskCard }: CardProps) => {
+export const Card = ({ className, title, draggable, onDragStart, color, description, phase, isTaskCard }: CardProps) => {
     
     const maxWords = 100;
 
@@ -33,7 +37,7 @@ export const Card = ({ className, title, draggable, onDragStart, cardColor, desc
     if (isTaskCard){
         cardType = <div><span>Task</span></div>
     } else {
-        cardType = <div className="card" draggable={draggable} onDragStart={onDragStart} style={{backgroundColor: cardColor}}>
+        cardType = <div className="card" draggable={draggable} onDragStart={onDragStart} style={{backgroundColor: color}}>
         <h1>{title}</h1>
         <p>{truncate(description)}</p>
         <span>{phase}</span>
