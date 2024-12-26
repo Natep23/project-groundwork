@@ -10,6 +10,7 @@ export type CardProps = {
     description?: string
     draggable?: true
     isTaskCard?: true
+    noViewButton?: true
     _id?: Id<"Cards">
     phase: "Research" | "In Progress" | "Completed"
     _creationTime?: number
@@ -18,7 +19,7 @@ export type CardProps = {
     
 };
 
-export const Card = ({ className, title, draggable, onDragStart, color, description, phase, isTaskCard }: CardProps) => {
+export const Card = ({ className, title, draggable, onDragStart, color, description, phase, isTaskCard, noViewButton, }: CardProps) => {
     
     const maxWords = 100;
 
@@ -42,7 +43,7 @@ export const Card = ({ className, title, draggable, onDragStart, color, descript
         <p>{truncate(description)}</p>
         <span>{phase}</span>
         <div className="card-button">
-            <button onClick={() => {console.log("clicked")}}>View</button>
+            {!noViewButton && <button onClick={() => {console.log("clicked")}}>View</button>}
         </div>
     </div>
     }

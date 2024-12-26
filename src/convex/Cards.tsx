@@ -49,7 +49,8 @@ export const addCard = mutation({
 export const removeCard = mutation({
     args:{id: v.id("Cards")},
     handler: async (ctx, args) => {
-        await ctx.db.delete(args.id);   
+        await ctx.db.delete(args.id);
+        console.log(args.id + " deleted");   
     }
 })
 

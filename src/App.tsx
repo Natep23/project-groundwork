@@ -2,7 +2,9 @@ import React, { useCallback } from 'react';
 import { Authenticated, Unauthenticated } from 'convex/react';
 import StartScreen from './screens/StartScreen';
 import DashboardScreen from './screens/DashboardScreen';
+import CreateCardScreen from './screens/CreateCardScreen';
 import { Header } from './components/header';
+import { BrowserRouter, Routes, Route} from 'react-router-dom';
 // import { api } from './convex/_generated/api';
 
 type ThemeBtnProps = {
@@ -37,6 +39,7 @@ function App() {
 
   
   return (
+    <BrowserRouter>
       <div className='app-container' data-theme={theme}>
       <Unauthenticated>
         <Header />
@@ -46,9 +49,13 @@ function App() {
       <Authenticated>
         <Header />
         <Themebutton onClick={toggleTheme} className="theme-button" />
-        <DashboardScreen />
+        <Routes>
+          <Route path="/" Component={DashboardScreen}/>
+          <Route path="/create-card" Component={CreateCardScreen}/>
+        </Routes>
       </Authenticated>
       </div>
+      </BrowserRouter>
   );
 }
 

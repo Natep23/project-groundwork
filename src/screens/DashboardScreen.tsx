@@ -12,13 +12,13 @@ export default function DashboardScreen() {
     const fetchResearch = useQuery(api.Cards.getResearchCards);
     const fetchCompleted = useQuery(api.Cards.getCompletedCards);
     const changePhase = useMutation(api.Cards.changePhase);
-    const removeCard = useMutation(api.Cards.removeCard);
 
     const [devCards, setDevCards] = React.useState(fetchDev);
 
     const [researchCards, setResearchCards] = React.useState(fetchResearch);
 
     const [completedCards, setCompletedCards] = React.useState(fetchCompleted);
+    
 
     React.useEffect(() => {
         setDevCards(fetchDev);
@@ -36,6 +36,8 @@ export default function DashboardScreen() {
         e.dataTransfer.setData("Id", card._id as Id<"Cards">)
         
         e.dataTransfer.dropEffect = "none"
+
+        console.log("Card ID:", card._id);
     }
 
     const handleOnDevDrop = (e: React.DragEvent) => {
