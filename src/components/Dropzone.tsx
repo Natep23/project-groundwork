@@ -11,6 +11,7 @@ interface DropzoneProps {
   className?: string;
   list?: CardProps[] | [] | undefined;
   hasTaskCard: boolean;
+  draggable: boolean;
   onDrop: (e: React.DragEvent) => void;
   onDragOver: (e: React.DragEvent, card: any) => void;
   onDragStart: (e: React.DragEvent, card: any) => void;
@@ -21,6 +22,7 @@ export const Dropzone = ({
   dropzoneTitle,
   className,
   list,
+  draggable,
   onDrop,
   onDragOver,
   onDragStart,
@@ -53,7 +55,7 @@ const navigation = useNavigate();
               description={card.description}
               key={index}
               title={card.title}
-              draggable
+              draggable = {draggable}
               phase={cardStatus}
               onDragStart={(e) => onDragStart(e, card)}
               _id={card._id}
