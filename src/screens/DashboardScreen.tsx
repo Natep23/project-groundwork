@@ -13,6 +13,8 @@ export default function DashboardScreen() {
     const fetchCompleted = useQuery(api.Cards.getCompletedCards);
     const changePhase = useMutation(api.Cards.changePhase);
 
+    const [toggleDAD, setDragAndDrop] = React.useState(false);
+
     const [devCards, setDevCards] = React.useState(fetchDev);
 
     const [researchCards, setResearchCards] = React.useState(fetchResearch);
@@ -68,6 +70,9 @@ export default function DashboardScreen() {
 
     return (
         <div className="start">
+            <div className="toggle-Container">
+                <button className="toggle-DAD" onClick={() => {setDragAndDrop(!toggleDAD)}}>Drag and Drop</button>
+            </div>
             <Dropzone
                 className="dev-work-dropzone"
                 cardStatus="In Progress"
@@ -77,6 +82,7 @@ export default function DashboardScreen() {
                 onDragStart={(e, index) => {handleOnDrag(e, index)}}
                 dropzoneTitle="Development" 
                 hasTaskCard={false}
+                draggable = {toggleDAD}
                 />
             <Dropzone
                 className="research-dropzone"
@@ -87,6 +93,7 @@ export default function DashboardScreen() {
                 onDragStart={(e, index) => {handleOnDrag(e, index)}}
                 dropzoneTitle="Research" 
                 hasTaskCard={false}
+                draggable = {toggleDAD}
                 />
             <Dropzone
                 className="completed-dropzone"
@@ -97,6 +104,7 @@ export default function DashboardScreen() {
                 onDragStart={(e, index) => {handleOnDrag(e, index)}}
                 dropzoneTitle="Completed" 
                 hasTaskCard={false}
+                draggable = {toggleDAD}
                 />
         </div>
     );

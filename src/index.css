@@ -120,6 +120,7 @@ header h1{
   margin: 35px;
 }
 
+
 .card {
   border-radius: 5px;
   border: 1px solid rgba(73, 73, 73, 0.521);
@@ -138,9 +139,9 @@ header h1{
   overflow-y: hidden;
 }
 
-.card:hover {
+/* .card:hover {
   transform: translateY(-15px);
-}
+} */
 
 .card:active {
   cursor: grabbing;
@@ -167,7 +168,7 @@ header h1{
   font-weight: bold;
 }
 
-.card-button {
+.card-hover-button {
   display: flex;
   flex-direction: column;
   padding : 10px;
@@ -175,12 +176,106 @@ header h1{
   margin-top: 6%;
 }
 
-.card-button button {
+.card-hover-button button {
   border-radius: 5px;  
   border: 1px solid var(--primary-background-color);
   cursor: pointer;
   font-size: large;
   font-weight: bold;
+  margin: 2px;
+}
+
+.no-drag-card {
+  border-radius: 5px;
+  border: 1px solid rgba(73, 73, 73, 0.521);
+  box-shadow: 0 4px 8px 0 var(--primary-shadow-color), 0 6px 20px 0 var(--secondary-shadow-color);
+  justify-items: center;
+  min-width: 250px;
+  max-width: 250px;
+  min-height: 300px;
+  max-height: 300px;
+  margin: 5px;
+  padding: 10px;
+  background-color: var(--secondary-background-color);
+  cursor: grab;
+  overflow: scroll;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.no-drag-card .h1 {
+  font-size: large;
+  font-weight: bolder;
+  padding: 10px;
+  padding-bottom: 0px;
+}
+
+.no-drag-card span {
+  color: var(--primary-text-color);
+  font-size: large;
+  margin: 2px;
+  font-weight: bold;
+}
+
+.toggle-Container {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  margin: 5px;
+}
+
+.toggle-DAD {
+  position: absolute;
+  right: 6px;
+  cursor: pointer;
+}
+
+.card-options-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.view-button {
+  border-radius: 5px;  
+  border: 1px solid var(--primary-background-color);
+  cursor: pointer;
+  font-size: large;
+  font-weight: bold;
+  margin: 2px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.delete-button {
+  border-radius: 5px;  
+  border: 1px solid var(--primary-background-color);
+  cursor: pointer;
+  font-size: large;
+  font-weight: bold;
+  margin: 2px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.delete-modal p {
+  font-size: large;
+  font-weight: bold;
+  margin: 2px;
+  margin-top: 8px;
+  width: 100%;
+  color: black
+}
+
+.delete-modal button {
+  border-radius: 5px;  
+  border: 1px solid var(--primary-background-color);
+  cursor: pointer;
+  font-size: large;
+  font-weight: bold;
+  margin: 2px;
+  margin-top: 8px;
+  width: 35%;
 }
 
 .dev-work-dropzone {

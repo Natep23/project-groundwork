@@ -1,4 +1,5 @@
 import React from "react";
+import CardOptions from "./CardOptions";
 import "../index.css";
 import { Id } from "../convex/_generated/dataModel";
 // import { api } from "../convex/_generated/api";
@@ -8,7 +9,7 @@ export type CardProps = {
     title?: string;
     color?: string
     description?: string
-    draggable?: true
+    draggable?: boolean | undefined
     isTaskCard?: true
     noViewButton?: true
     _id?: Id<"Cards">
@@ -19,7 +20,7 @@ export type CardProps = {
     
 };
 
-export const Card = ({ className, title, draggable, onDragStart, color, description, phase, isTaskCard, noViewButton, }: CardProps) => {
+export const Card = ({ _id, title, draggable, onDragStart, color, description, phase, isTaskCard, noViewButton, }: CardProps) => {
     
     const maxWords = 100;
 
@@ -34,18 +35,27 @@ export const Card = ({ className, title, draggable, onDragStart, color, descript
         }
     };
 
+
     let cardType;
     if (isTaskCard){
         cardType = <div><span>Task</span></div>
     } else {
-        cardType = <div className="card" draggable={draggable} onDragStart={onDragStart} style={{backgroundColor: color}}>
-        <h1>{title}</h1>
-        <p>{truncate(description)}</p>
-        <span>{phase}</span>
-        <div className="card-button">
-            {!noViewButton && <button onClick={() => {console.log("clicked")}}>View</button>}
+        if (draggable === true) {
+        cardType = 
+        <div className="card" draggable={draggable} onDragStart={onDragStart} style={{backgroundColor: color}}>
+            <h1>{title}</h1>
+            <p>{truncate(description)}</p>
+            <span>{phase}</span>
         </div>
-    </div>
+        } else {
+        cardType = 
+        <div className="no-drag-card" style={{backgroundColor: color}}>
+            <h1>{title}</h1>
+            <p>{truncate(description)}</p>
+            <span>{phase}</span>
+                {!noViewButton && _id && <CardOptions _id={_id} />}
+        </div>
+        }
     }
 
     return cardType;
