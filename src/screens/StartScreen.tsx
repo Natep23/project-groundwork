@@ -7,7 +7,9 @@ export default function StartScreen() {
     <div className='start'>
         <span>Sign-In To Get Started</span>
         <br />
-        <SignInButton/>
+        <div className="button-style-wrap">
+            <SignInButton/>
+        </div>
     </div>
     );
 }

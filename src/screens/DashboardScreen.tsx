@@ -34,6 +34,7 @@ export default function DashboardScreen() {
 
    
     const handleOnDrag = (e: React.DragEvent, card: any) => {
+        if (!toggleDAD) return;
         e.dataTransfer.setData("title", card.title);
         e.dataTransfer.setData("Id", card._id as Id<"Cards">)
         
@@ -43,6 +44,7 @@ export default function DashboardScreen() {
     }
 
     const handleOnDevDrop = (e: React.DragEvent) => {
+        if (!toggleDAD) return;
         const title = e.dataTransfer.getData("title") as string;
         console.log("Card Title:", title);
         if (devCards && cardExists(devCards, {title: title})) return;
@@ -50,6 +52,7 @@ export default function DashboardScreen() {
     }
 
     const handleOnResearchDrop = (e: React.DragEvent) => {
+        if (!toggleDAD) return;
         const title = e.dataTransfer.getData("title") as string;
         console.log("Card Title:", title);
         if (researchCards && cardExists(researchCards, {title: title})) return;
@@ -58,6 +61,7 @@ export default function DashboardScreen() {
     }
 
     const handleOnCompletedDrop = (e: React.DragEvent) => { 
+        if (!toggleDAD) return;
         const title = e.dataTransfer.getData("title") as string;
         console.log("Card Title:", title);
         if (completedCards && cardExists(completedCards, {title: title})) return;
@@ -65,6 +69,7 @@ export default function DashboardScreen() {
     }
 
     const handleOnDragOver = (e: React.DragEvent) => {
+        if (!toggleDAD) return;
         e.preventDefault();
     };
 
@@ -81,7 +86,7 @@ export default function DashboardScreen() {
                 onDragOver={handleOnDragOver}
                 onDragStart={(e, index) => {handleOnDrag(e, index)}}
                 dropzoneTitle="Development" 
-                hasTaskCard={false}
+                isTaskCard={false}
                 draggable = {toggleDAD}
                 />
             <Dropzone
@@ -92,7 +97,7 @@ export default function DashboardScreen() {
                 onDragOver={handleOnDragOver}
                 onDragStart={(e, index) => {handleOnDrag(e, index)}}
                 dropzoneTitle="Research" 
-                hasTaskCard={false}
+                isTaskCard={false}
                 draggable = {toggleDAD}
                 />
             <Dropzone
@@ -103,7 +108,7 @@ export default function DashboardScreen() {
                 onDragOver={handleOnDragOver}
                 onDragStart={(e, index) => {handleOnDrag(e, index)}}
                 dropzoneTitle="Completed" 
-                hasTaskCard={false}
+                isTaskCard={false}
                 draggable = {toggleDAD}
                 />
         </div>

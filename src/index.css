@@ -16,6 +16,18 @@
   --preview-shadow-color: rgba(238, 234, 234, 0.496);
   --preview-secondary-shadow-color: rgba(51, 32, 32, 0.171);
 
+  --primary-background-color-start: #eb1def;
+  --primary-background-color-end: #a09f9f;
+  --primary-background-color-start-hover: #a09f9f;
+  --primary-background-color-end-hover: #eb1def;
+  --border-color: #8f8c8c;
+
+  --task-list-bkg-color: rgba(179, 96, 224, 0.942);
+  --reserach-list-bkg-color: rgba(59, 41, 69, 0.942);
+
+  --task-card-color: rgba(64, 91, 138, 0.632);
+  --reserach-container-color: rgba(59, 41, 69, 0.942);
+
   --add-button-color: #6cb90e;
   --delete-button-color: #df0000;
 
@@ -34,6 +46,19 @@
 
   --primary-shadow-color: rgba(51, 46, 46, 0.853);
   --secondary-shadow-color: rgba(92, 40, 82, 0.479);
+
+  --primary-background-color-start: #4b2ab0;
+  --primary-background-color-end: #6d3063;
+  --primary-background-color-start-hover: #6d3063;
+  --primary-background-color-end-hover: #4b2ab0;
+  --border-color: #333;
+
+  --task-list-bkg-color: rgba(59, 41, 69, 0.942);
+  --reserach-list-bkg-color: rgba(170, 0, 255, 0.238);
+
+  --task-card-color: rgba(104, 70, 123, 0.942);
+  --reserach-container-color: rgba(59, 41, 69, 0.942);
+
 
   --add-button-color: #00dfdfec;
   --delete-button-color: #df0000;
@@ -101,10 +126,24 @@ header h1{
 }
 
 .start span {
-  font-size: 30px;
+  font-size: 60px;
   font-weight: bolder;
   padding: 10px;
   padding-top: 200px;
+}
+
+.button-style-wrap button {
+  background: linear-gradient(to right, var(--primary-background-color-start), var(--primary-background-color-end));
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 8px 8px;
+  font-size: 16px;
+  cursor: pointer;
+  color: #fff;
+}
+
+.button-style-wrap button:hover {
+  background: linear-gradient(to right, var(--primary-background-color-start-hover), var(--primary-background-color-end-hover));
 }
 
 .app-container {
@@ -139,13 +178,10 @@ header h1{
   overflow-y: hidden;
 }
 
-/* .card:hover {
-  transform: translateY(-15px);
-} */
 
 .card:active {
   cursor: grabbing;
-  opacity: 0.5;
+  opacity: 0.1;
   min-width: 200px;
   min-height: 200px;
   max-width: 175px;
@@ -225,9 +261,19 @@ header h1{
 }
 
 .toggle-DAD {
-  position: absolute;
+  position: absolute; /* adjust this value to match the height of the GroundWork Header */
   right: 6px;
+  background: linear-gradient(to right, var(--primary-background-color-start), var(--primary-background-color-end));
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 8px 8px;
+  font-size: 16px;
   cursor: pointer;
+  color: #fff;
+}
+
+.toggle-DAD:hover {
+  background: linear-gradient(to right, var(--primary-background-color-start-hover), var(--primary-background-color-end-hover));
 }
 
 .card-options-container {
@@ -267,7 +313,7 @@ header h1{
   color: black
 }
 
-.delete-modal button {
+.delete-modal-button {
   border-radius: 5px;  
   border: 1px solid var(--primary-background-color);
   cursor: pointer;
@@ -276,6 +322,13 @@ header h1{
   margin: 2px;
   margin-top: 8px;
   width: 35%;
+}
+
+.delete-card-title {
+  font-weight: bolder;
+  font: 15pt/0 Arial;
+  padding: 0 3px;
+  color: rgb(6, 6, 6)
 }
 
 .dev-work-dropzone {
@@ -416,4 +469,181 @@ input[type="color"] {
 
 .card-input-color-pick {
   width: 8%;
+}
+
+.card-screen-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.card-screen-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.card-screen-description {
+  font-size: 18px;
+  color: var(--primary-text-color);
+}
+.card-screen-header {
+  position: absolute;
+  top: 100px;
+  left: 10px;
+}
+
+.card-screen-header button {
+  background: linear-gradient(to right, var(--primary-background-color-start), var(--primary-background-color-end));
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  color: #fff;
+}
+
+.card-screen-header button:hover {
+  background: linear-gradient(to right, var(--primary-background-color-start-hover), var(--primary-background-color-end-hover));
+}
+
+.card-screen-title {
+  font-size: 140px; 
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.card-screen-description {
+  font-style: italic;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.task-dropzone {
+  height: 100%;
+  border : 1px solid;
+  border-color: var(--primary-shadow-color);
+  border-radius: 8px;
+  align-items: flex-start;
+  background-color: var(--task-list-bkg-color);
+  box-shadow: 0 4px 8px 0 var(--primary-shadow-color), 0 6px 20px 0 var(--secondary-shadow-color);
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  overflow: scroll;
+  flex: 5;
+}
+
+.task-dropzone legend {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.task-card {
+  border: 3px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px 0 var(--preview-shadow-color), 0 6px 20px 0 var(--preview-secondary-shadow-color);
+  padding: 10px;
+  width: 97%;
+  margin: 1%;
+  height: 100%;
+  background-color: var(--task-card-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.task-card:active {
+  cursor: grabbing;
+  min-width: 97%;
+  min-height: 10%;
+  max-width: 97%;
+  max-height: 10%;
+  opacity: 0.5;
+}
+
+.task-card h1 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: rgb(252, 252, 252);
+}
+
+.task-card p {
+  font-size: 18px;
+  padding: 2px;
+  color: rgb(252, 252, 252);
+}
+
+.task-card img {
+  cursor: pointer;
+}
+
+.tasks-research-area {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 70%;
+}
+
+.add-task-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.research-list {
+  width: 100%;
+  height: 100%;
+  border : 1px solid;
+  border-color: var(--primary-shadow-color);
+  border-radius: 8px;
+  align-items: flex-start;
+  background-color: var(--reserach-list-bkg-color);
+  box-shadow: 0 4px 8px 0 var(--primary-shadow-color), 0 6px 20px 0 var(--secondary-shadow-color);
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  overflow: scroll;
+  flex: 4;
+}
+
+.research-list legend {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.research-list ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  width: 80%;
+}
+
+.research-list li { 
+  margin-bottom: 10px;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid var(--primary-background-color);
+  box-shadow: 0 4px 8px 0 var(--preview-shadow-color), 0 6px 20px 0 var(--preview-secondary-shadow-color);
+  justify-content: space-between;
+  display: flex;
+  align-items: center;
+}
+
+.research-list img {
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+}
+
+.research-list p {
+  text-decoration: none;
+  color: var(--primary-text-color);
+  font-size: 16px;
+  font-weight: bold;
+  width: 100%;
 }

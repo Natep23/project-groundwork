@@ -3,8 +3,10 @@ import { Authenticated, Unauthenticated } from 'convex/react';
 import StartScreen from './screens/StartScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import CreateCardScreen from './screens/CreateCardScreen';
+import CardScreen from './screens/CardScreen';
 import { Header } from './components/header';
 import { BrowserRouter, Routes, Route} from 'react-router-dom';
+import ScrollToTop from './components/ScrollToTop';
 // import { api } from './convex/_generated/api';
 
 type ThemeBtnProps = {
@@ -41,6 +43,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className='app-container' data-theme={theme}>
+      <ScrollToTop />
       <Unauthenticated>
         <Header />
         <Themebutton onClick={toggleTheme} className="theme-button" />
@@ -52,6 +55,7 @@ function App() {
         <Routes>
           <Route path="/" Component={DashboardScreen}/>
           <Route path="/create-card" Component={CreateCardScreen}/>
+          <Route path="/card/:id" Component={CardScreen}/>
         </Routes>
       </Authenticated>
       </div>

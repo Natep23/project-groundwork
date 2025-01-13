@@ -16,12 +16,15 @@ export default function CreateCardScreen() {
     const nav = useNavigate();
 
     const handleAddCard = () => {
-        newCard({title, description, color, phase});
+        newCard({title, description, color, phase: phase ?? "Research"});
         nav("/");
     }
     return(
     <>
     <div className="card-preview-container">
+        <div className="card-screen-header">
+            <button onClick={() => nav("/")}>Back to Dashboard</button>
+        </div>
         <Card
             title={title}
             description={description}
@@ -58,7 +61,9 @@ export default function CreateCardScreen() {
             <option value="In Progress">In Progress</option>
             <option value="Completed">Completed</option>
         </select>
-        <button className="create-card-button" onClick={handleAddCard}>Create Card</button>
+        <div className="button-style-wrap">
+            <button onClick={handleAddCard}> Create Card </button>
+        </div>
     </div>
     </>
     )

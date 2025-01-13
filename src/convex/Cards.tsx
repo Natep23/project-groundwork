@@ -54,6 +54,18 @@ export const removeCard = mutation({
     }
 })
 
+export const getCardDetails = query({
+    args: {id: v.id("Cards")},
+    handler: async (ctx, args) => {
+        const cardDetails : string[] = await ctx.db.get(args.id).then(card => 
+            [
+                card?.title ?? "Title not found", 
+                card?.description ?? "Description not found",
+            ]);
+        return cardDetails;
+    }
+})
+
 export const changePhase = mutation({
     args: {id: v.id("Cards"), phase: v.string()},
     handler: async (ctx, args) => {
