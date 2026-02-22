@@ -4,8 +4,7 @@ import { Card, CardProps, TaskCard, TaskProps } from "../components/card";
 import { useNavigate } from  "react-router-dom";
 import { TaskModal } from "./Modals";
 import { Id } from "../convex/_generated/dataModel";
-import { useMutation } from "convex/react";
-import { api } from "../convex/_generated/api";
+
 
 
 interface DropzoneProps {
@@ -37,14 +36,10 @@ export const Dropzone = ({
 
 const navigation = useNavigate();
 const [showModal, setShowModal] = React.useState(false);
-const addTask = useMutation(api.Tasks.addTask);
 
 
 const handleAddTask = () => {
-  console.log("add task");
   setShowModal(true);
-  const [taskDescription, priority, order] = ["", 1, 1];
-  addTask({taskDescription: taskDescription, cardId: id as Id<"Cards">, priority: priority, order: order});
 }
 
   let Content;
@@ -78,17 +73,17 @@ const handleAddTask = () => {
       onDragOver ={(e) => onDragOver(e, { taskDescription: dropzoneTitle })}
       >
         <legend>{dropzoneTitle}</legend>
-        {list?.sort((a, b) => (a as TaskProps).order - (b as TaskProps).order)?.map((task, index) => ( <>
-          <TaskCard {...task as TaskProps} key={index} order={index + 1} onTaskDragStart={(e) => onDragStart(e,task)}/>
-          </>
+        {list?.sort((a, b) => (a as TaskProps).order - (b as TaskProps).order)?.map((task, index) => ( 
+          <TaskCard {...task as TaskProps} key={index} order={index + 1} onTaskDragStart={(e) => onDragStart(e,task)} _id={task._id as Id<"Tasks">}/>
         ))}
         <div className="task-card" draggable={false} onClick={handleAddTask}>
+            <h1>Add Task</h1>
             <img
               src="https://img.icons8.com/ios/50/000000/plus-math.png"
               alt="add-card"
             />
         </div>
-        <TaskModal showModal={showModal} setShowModal={setShowModal} modalMessage="Add Task" handleAdd={handleAddTask}/>
+        <TaskModal showModal={showModal} setShowModal={setShowModal} modalMessage="Add Task" cardId={id}/>
       </fieldset>
     );
   } else {

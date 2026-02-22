@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as Cards from "../Cards.js";
+import type * as ResearchLinks from "../ResearchLinks.js";
 import type * as Tasks from "../Tasks.js";
 
 /**
@@ -26,6 +27,7 @@ import type * as Tasks from "../Tasks.js";
  */
 declare const fullApi: ApiFromModules<{
   Cards: typeof Cards;
+  ResearchLinks: typeof ResearchLinks;
   Tasks: typeof Tasks;
 }>;
 export declare const api: FilterApi<
