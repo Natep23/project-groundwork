@@ -1,46 +1,41 @@
-# Getting Started with Create React App
+# GroundWork
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A personal board for tracking dev projects from first research to done. Cards move through
+`Research` → `In Progress` → `Completed`; each card carries its own task checklist and research
+links (Obsidian notes or web pages).
 
-## Available Scripts
+Built with React 18 + TypeScript on Vite, [Convex](https://convex.dev) for the backend/database,
+and [Clerk](https://clerk.com) for auth.
 
-In the project directory, you can run:
+## Running it
 
-### `npm start`
+Two processes side by side:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```sh
+npm run dev        # Vite dev server on http://localhost:3000
+npx convex dev     # Convex backend in watch mode (required)
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+`VITE_CONVEX_URL` and `CONVEX_DEPLOYMENT` live in `.env.local`. The Clerk publishable key is
+served by the backend at boot (`PublicConfig.getClerkPublishableKey`), not stored locally.
 
-### `npm test`
+## Scripts
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+| Command | What it does |
+| --- | --- |
+| `npm run dev` / `npm start` | dev server |
+| `npm test` | Vitest in watch mode |
+| `npm run test:run` | run the test suite once |
+| `npm run typecheck` | `tsc --noEmit` over the whole project |
+| `npm run build` | typecheck + production build to `dist/` |
+| `npm run preview` | serve the production build locally |
 
-### `npm run build`
+## Layout
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- `src/convex/` — Convex backend (schema, queries/mutations, auth config). Every function except
+  the public-config query requires a signed-in user and scopes data by `userId`.
+- `src/screens/`, `src/components/` — one screen per route plus shared components.
+- `src/styles/` — token-based design system; four themes (Daylight, Blueprint, Graphite, Jobsite)
+  switched via `data-theme` on `<html>`.
+- `src/tests/` — Vitest suites: `convex/` (backend, runs in edge-runtime via convex-test) and
+  `frontend/` (jsdom + Testing Library).

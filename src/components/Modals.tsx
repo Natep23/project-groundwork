@@ -1,144 +1,204 @@
-import React, { ChangeEvent } from "react";
-import "../index.css"
+import React from "react";
+import { createPortal } from "react-dom";
 import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { Id } from "../convex/_generated/dataModel";
+import { Doc } from "../convex/_generated/dataModel";
+import { ColorSwatches, DEFAULT_FLAG } from "./ColorSwatches";
+import { useToast } from "../lib/toast";
+import { logger } from "../lib/logger";
 
-interface ModalProps {
-    showModal: boolean;
-    setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
-    messageClass?: string
-    modalMessage?: string
-    maxTaskList?: number
-    cardId?: Id<"Cards">
-    handleCancel?: () => void
-    handleDelete?: () => void
-}
+type ModalShellProps = {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+};
 
+/* Shared dialog shell: scrim, Escape/scrim-click close, focus containment. */
+export function ModalShell({ title, onClose, children }: ModalShellProps) {
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  const titleId = React.useId();
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
 
-export function DeleteModal({ showModal, setShowModal, modalMessage, handleCancel, handleDelete, messageClass }: ModalProps) {
-    if (showModal === false) {
-        return null
-    } else {
-        return (
-                <div style={{position: "fixed", top: 0, left: 0, width: "100%", height: "100%", zIndex: 9999}}>
-                <div style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.5)", zIndex: -1}}></div>
-                <div style={{position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "rgb(255, 255, 255)", padding: "40px", borderRadius: "5px"}}>
-                    <h1 className={messageClass}>{modalMessage}</h1>
-                <button className="delete-modal-button" style={{backgroundColor: "rgba(255, 0, 0, 0.83)", color: "white"}} onClick={handleDelete}>Delete</button>
-                <button className="delete-modal-button" style={{backgroundColor: "rgba(22, 106, 232, 0.83)", color: "white", marginLeft: "100px"}} onClick={handleCancel}>Cancel</button>
-                </div>
-                </div>
-        )
-    }
-}
+  React.useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const panel = panelRef.current;
+    const firstField = panel?.querySelector<HTMLElement>(
+      "input:not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled])"
+    );
+    (firstField ?? panel)?.focus();
 
-export function TaskModal({ showModal, setShowModal, modalMessage, messageClass,maxTaskList, cardId }: ModalProps) {
-    const createTask = useMutation(api.Tasks.addTask);
-    const [taskDescription, setTaskDescription] = React.useState("");
-    const [priority, setPriority] = React.useState(1);
-    const [order, setOrder] = React.useState(1);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
-    const handleAddDescription = (text: ChangeEvent<HTMLInputElement>) => {
-        setTaskDescription(text.target.value as string);
-    }
-    
-    const handleAddPriority = (text: ChangeEvent<HTMLInputElement>) => {
-        setPriority(parseInt(text.target.value))
-    }
-    
-    const handleAddOrder = (text: ChangeEvent<HTMLInputElement>) => {
-        setOrder(parseInt(text.target.value));
-    }
-
-    const handleAddTask = () => {
-        if (!cardId) return
-        createTask({
-            taskDescription: taskDescription, 
-            cardId: cardId, 
-            priority: priority, 
-            order: order
-        });
-        setShowModal(false);
-    }
-
-    if (showModal === false) {
-        return null
-    } else {
-        return (
-            <div style={{position: "fixed", top: 0, left: 0, width: "100%", height: "100%", zIndex: 9999}}>
-            <div style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.18)", zIndex: -1}}></div>
-            <div style={{position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "rgb(237, 225, 225)", padding: "40px", borderRadius: "5px"}}>
-                <h1 className={messageClass} style={{color: "rgba(0, 0, 0, 0.87)"}}>{modalMessage}</h1>
-                <input 
-                    type="text" 
-                    placeholder="Task Name" 
-                    style={{border: "1px solid black", borderRadius: "5px", padding: "5px", width: "100%", marginBottom: "10px"}}
-                    onChange={handleAddDescription}
-                    value={taskDescription}
-                />
-                <input 
-                    type="number" 
-                    placeholder="Priority" 
-                    style={{border: "1px solid black", borderRadius: "5px", padding: "5px", width: "100%", marginBottom: "10px"}} 
-                    min={"1"} 
-                    max={"3"}
-                    onChange={handleAddPriority}
-                    value={priority}
-                />
-                <input 
-                    type="number" 
-                    placeholder="Task order" 
-                    style={{border: "1px solid black", borderRadius: "5px", padding: "5px", width: "100%", marginBottom: "10px"}} 
-                    min={"1"} 
-                    max={maxTaskList}
-                    onChange={handleAddOrder}
-                    value={order}
-                />
-
-                <button className="delete-modal-button" style={{backgroundColor: "rgba(255, 0, 0, 0.83)", color: "white", marginLeft: "100px", width: "17%", position: "absolute", top: "0%", left: "53%"}} onClick={() => setShowModal(false)}>Close</button>
-                <button className="delete-modal-button" style={{backgroundColor: "rgba(0, 255, 0, 0.82)", color: "white", marginLeft: "100px", width: "20%", position: "absolute", top: "83%", right: "40%"}} onClick={handleAddTask}>Add</button>
-            </div>
-            </div>
-        )
-    }
-}
-
-export function ResearchModal ({ showModal, setShowModal, modalMessage, messageClass, cardId }: ModalProps) {
-    const createLink = useMutation(api.ResearchLinks.addLink);
-    const [link, setLink] = React.useState("");
-
-    const handleLink = (text: ChangeEvent<HTMLInputElement>) => {
-        setLink(text.target.value); 
-    }
-
-    const handleAddLink = () => {
-        if (!link || !cardId) return   
-        createLink({link: link, cardId: cardId});
-        setShowModal(false);
-    }
-
-        if (showModal === false) {
-            return null
-        } else {
-            return (
-                <div style={{position: "fixed", top: 0, left: 0, width: "100%", height: "100%", zIndex: 9999}}>
-                <div style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.18)", zIndex: -1}}></div>
-                <div style={{position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "rgb(237, 225, 225)", padding: "40px", borderRadius: "5px"}}>
-                    <h1 className={messageClass} style={{color: "rgba(0, 0, 0, 0.87)"}}>{modalMessage}</h1>
-
-                    <input 
-                        type="text" 
-                        placeholder="Link"
-                        style={{border: "1px solid black", borderRadius: "5px", padding: "5px", width: "100%", marginBottom: "10px"}}
-                        onChange={handleLink}
-                        value={link}
-                    />
-                    <button className="delete-modal-button" style={{backgroundColor: "rgba(255, 0, 0, 0.83)", color: "white", marginLeft: "100px", width: "25%", position: "absolute", top: "0%", left: "35%"}} onClick={() => setShowModal(false)}>Close</button>
-                    <button className="delete-modal-button" style={{backgroundColor: "rgba(0, 255, 0, 0.82)", color: "white", marginLeft: "100px", width: "20%", position: "absolute", top: "75%", right: "40%"}} onClick={handleAddLink}>Add</button>
-
-                </div>
-                </div>
-            )
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCloseRef.current();
+      if (e.key === "Tab" && panel) {
+        const focusables = panel.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (!panel.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+        } else if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
         }
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previouslyFocused?.focus();
+    };
+  }, []);
+
+  /*
+   * Portaled to <body> for stacking, and every pointer/click event is stopped
+   * at the scrim: modals can be owned by draggable, clickable cards, and React
+   * portals still bubble synthetic events through the component tree — without
+   * this, pressing Cancel inside the dialog would also "click" the card.
+   */
+  return createPortal(
+    <div
+      className="modal-scrim"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+        e.stopPropagation();
+      }}
+      onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+      onTouchStart={(e) => e.stopPropagation()}
+    >
+      <div
+        ref={panelRef}
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+      >
+        <h2 className="modal__title" id={titleId}>
+          {title}
+        </h2>
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+type ConfirmDeleteProps = {
+  open: boolean;
+  title: string;
+  body: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+  onClose: () => void;
+};
+
+export function ConfirmDeleteModal({ open, title, body, confirmLabel, onConfirm, onClose }: ConfirmDeleteProps) {
+  if (!open) return null;
+  return (
+    <ModalShell title={title} onClose={onClose}>
+      <p className="modal__body">{body}</p>
+      <div className="modal__actions">
+        <button className="btn" onClick={onClose}>
+          Cancel
+        </button>
+        <button className="btn btn--danger" onClick={onConfirm}>
+          {confirmLabel}
+        </button>
+      </div>
+    </ModalShell>
+  );
+}
+
+type EditCardModalProps = {
+  open: boolean;
+  card: Doc<"Cards">;
+  onClose: () => void;
+};
+
+export function EditCardModal({ open, card, onClose }: EditCardModalProps) {
+  const updateCard = useMutation(api.Cards.updateCard);
+  const { toast, toastError } = useToast();
+
+  const [title, setTitle] = React.useState(card.title);
+  const [description, setDescription] = React.useState(card.description);
+  const [color, setColor] = React.useState(card.color ?? DEFAULT_FLAG);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (open) {
+      setTitle(card.title);
+      setDescription(card.description);
+      setColor(card.color ?? DEFAULT_FLAG);
+      setError(null);
+    }
+  }, [open, card]);
+
+  if (!open) return null;
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) {
+      setError("Give the card a title.");
+      return;
+    }
+    try {
+      await updateCard({ id: card._id, title: title.trim(), description, color });
+      toast("Card saved");
+      onClose();
+    } catch (err) {
+      logger.error("updateCard failed", err);
+      toastError("Couldn't save the card. Try again.");
+    }
+  };
+
+  return (
+    <ModalShell title="Edit card" onClose={onClose}>
+      <form onSubmit={handleSave}>
+        <div className="field">
+          <label htmlFor="edit-title">Title</label>
+          <input
+            id="edit-title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={200}
+          />
+          {error && <span className="field__error">{error}</span>}
+        </div>
+        <div className="field">
+          <label htmlFor="edit-desc">Description</label>
+          <textarea
+            id="edit-desc"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            maxLength={2000}
+          />
+        </div>
+        <div className="field">
+          <label>Flag color</label>
+          <ColorSwatches value={color} onChange={setColor} />
+        </div>
+        <div className="modal__actions">
+          <button type="button" className="btn" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="btn btn--primary">
+            Save changes
+          </button>
+        </div>
+      </form>
+    </ModalShell>
+  );
 }

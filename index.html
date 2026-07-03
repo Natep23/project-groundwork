@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#10273f" />
+    <meta name="description" content="GroundWork — a personal board for tracking dev projects from research to done" />
+    <title>GroundWork</title>
+  </head>
+  <body>
+    <script>
+      // Apply the saved theme before first paint to avoid a flash of Daylight.
+      try {
+        var t = localStorage.getItem("groundwork-theme");
+        if (t === "dark") t = "graphite";
+        if (t === "light") t = "daylight";
+        if (!t && matchMedia("(prefers-color-scheme: dark)").matches) t = "graphite";
+        if (t) document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
+</html>

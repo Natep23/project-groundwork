@@ -1,0 +1,129 @@
+/*
+ * GroundWork theme contract.
+ * Every theme must define the full set of tokens below; components consume
+ * only tokens, never raw colors. Themes are applied via data-theme on <html>.
+ */
+
+:root {
+  --font-display: "Big Shoulders Display Variable", "Arial Narrow", sans-serif;
+  --font-body: "Archivo Variable", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "Consolas", monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 40px;
+
+  --header-h: 64px;
+}
+
+/* ---- Daylight (default): a working drawing on white paper ---- */
+:root,
+[data-theme="daylight"] {
+  color-scheme: light;
+  --bg: #f3f4f1;
+  --grid-line: rgba(29, 33, 30, 0.045);
+  --grid-line-major: rgba(29, 33, 30, 0.07);
+  --surface: #ffffff;
+  --surface-2: #eaece6;
+  --scrim: rgba(29, 33, 30, 0.45);
+  --ink: #1d211e;
+  --ink-muted: #5d635c;
+  --ink-faint: #8a9088;
+  --line: #d7dad1;
+  --line-strong: #a9aea3;
+  --accent: #2456a6;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3eaf6;
+  --danger: #b3362b;
+  --danger-ink: #ffffff;
+  --ok: #3e7c4f;
+  --shadow-1: 0 1px 2px rgba(29, 33, 30, 0.08);
+  --shadow-2: 0 8px 24px rgba(29, 33, 30, 0.14);
+  --radius: 6px;
+  --border-w: 1px;
+  --column-border-style: solid;
+}
+
+/* ---- Blueprint: the drafting table after dark ---- */
+[data-theme="blueprint"] {
+  color-scheme: dark;
+  --bg: #10273f;
+  --grid-line: rgba(214, 232, 247, 0.06);
+  --grid-line-major: rgba(214, 232, 247, 0.12);
+  --surface: #1a3654;
+  --surface-2: #21405f;
+  --scrim: rgba(4, 12, 20, 0.6);
+  --ink: #e7f0f8;
+  --ink-muted: #a9c3da;
+  --ink-faint: #7194b3;
+  --line: #35597e;
+  --line-strong: #5e82a6;
+  --accent: #f5f9fc;
+  --accent-ink: #10273f;
+  --accent-soft: rgba(231, 240, 248, 0.09);
+  --danger: #f0796d;
+  --danger-ink: #2b0f0c;
+  --ok: #7fc98f;
+  --shadow-1: 0 1px 2px rgba(4, 12, 20, 0.4);
+  --shadow-2: 0 10px 28px rgba(4, 12, 20, 0.5);
+  --radius: 2px;
+  --border-w: 1px;
+  --column-border-style: dashed;
+}
+
+/* ---- Graphite: pencil work in a dim office ---- */
+[data-theme="graphite"] {
+  color-scheme: dark;
+  --bg: #17181a;
+  --grid-line: transparent;
+  --grid-line-major: transparent;
+  --surface: #202225;
+  --surface-2: #292c30;
+  --scrim: rgba(0, 0, 0, 0.55);
+  --ink: #e9e7e2;
+  --ink-muted: #a5a29b;
+  --ink-faint: #6f6d67;
+  --line: #33363b;
+  --line-strong: #4a4e55;
+  --accent: #e3a755;
+  --accent-ink: #1a1206;
+  --accent-soft: rgba(227, 167, 85, 0.13);
+  --danger: #e0685c;
+  --danger-ink: #230a08;
+  --ok: #8bc492;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 10px 28px rgba(0, 0, 0, 0.5);
+  --radius: 10px;
+  --border-w: 1px;
+  --column-border-style: solid;
+}
+
+/* ---- Jobsite: safety yellow, blunt edges, full sun ---- */
+[data-theme="jobsite"] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --grid-line: transparent;
+  --grid-line-major: transparent;
+  --surface: #ffffff;
+  --surface-2: #f2f2f0;
+  --scrim: rgba(16, 17, 16, 0.5);
+  --ink: #101110;
+  --ink-muted: #4a4b48;
+  --ink-faint: #767773;
+  --line: #101110;
+  --line-strong: #101110;
+  --accent: #ffc400;
+  --accent-ink: #101110;
+  --accent-soft: #fff3cc;
+  --danger: #d42b1e;
+  --danger-ink: #ffffff;
+  --ok: #1e7a38;
+  --shadow-1: 2px 2px 0 rgba(16, 17, 16, 0.9);
+  --shadow-2: 4px 4px 0 rgba(16, 17, 16, 0.9);
+  --radius: 0px;
+  --border-w: 2px;
+  --column-border-style: solid;
+}
