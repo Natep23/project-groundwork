@@ -8,12 +8,12 @@ export const Header = () => {
         <div className="header">
         <header>
             <Authenticated>
-                <h1>GroundWork</h1>
+                <h1 onClick={() => window.location.href = "/"} style={{cursor: "pointer"}}>GroundWork</h1>
                 <UserButton /> 
             </Authenticated>
 
             <Unauthenticated>
-                <h1>GroundWork</h1>
+                <h1 onClick={() => window.location.href = "/"} style={{cursor: "pointer"}}>GroundWork</h1>
             </Unauthenticated>
         </header>
         </div>

@@ -1,19 +1,22 @@
 import React from "react";
 import "../index.css";
-import { Card, CardProps } from "../components/card";
+import { Card, CardProps, TaskCard, TaskProps } from "../components/card";
 import { useNavigate } from  "react-router-dom";
+import { TaskModal } from "./Modals";
+import { Id } from "../convex/_generated/dataModel";
 
 
 
 interface DropzoneProps {
-  cardStatus: "Research" | "In Progress" | "Completed";
+  cardStatus?: "Research" | "In Progress" | "Completed";
   dropzoneTitle: string;
   className?: string;
-  list?: CardProps[] | [] | undefined;
-  hasTaskCard: boolean;
+  list?: CardProps[] | TaskProps[] | [] | undefined;
+  isTaskCard: boolean;
   draggable: boolean;
+  id?: Id<"Cards">
   onDrop: (e: React.DragEvent) => void;
-  onDragOver: (e: React.DragEvent, card: any) => void;
+  onDragOver?: (e: React.DragEvent, card: any) => void;
   onDragStart: (e: React.DragEvent, card: any) => void;
 }
 
@@ -26,15 +29,22 @@ export const Dropzone = ({
   onDrop,
   onDragOver,
   onDragStart,
-  hasTaskCard,
+  isTaskCard,
+  id
 }: DropzoneProps) => {
 
 
 const navigation = useNavigate();
+const [showModal, setShowModal] = React.useState(false);
+
+
+const handleAddTask = () => {
+  setShowModal(true);
+}
 
   let Content;
 
-  if (!hasTaskCard) {
+  if (!isTaskCard && onDragOver) {
     Content = (
       <fieldset
         className={className}
@@ -50,26 +60,38 @@ const navigation = useNavigate();
             />
           </button>
           {list?.map((card, index) => (
-            <Card
-              color={card.color}
-              description={card.description}
-              key={index}
-              title={card.title}
-              draggable = {draggable}
-              phase={cardStatus}
-              onDragStart={(e) => onDragStart(e, card)}
-              _id={card._id}
-            />
+            <Card {...card} key={index} draggable={draggable} onDragStart={(e) => onDragStart(e,card)} _id={card._id as Id<"Cards">}/>
           ))}
         </div>
       </fieldset>
     );
-  } else {
+  } else if (onDragOver) {
     Content = (
-      <fieldset>
-        <legend>Card Type Not Yet Created</legend>
+      <fieldset 
+      className={className}
+      onDrop={onDrop}
+      onDragOver ={(e) => onDragOver(e, { taskDescription: dropzoneTitle })}
+      >
+        <legend>{dropzoneTitle}</legend>
+        {list?.sort((a, b) => (a as TaskProps).order - (b as TaskProps).order)?.map((task, index) => ( 
+          <TaskCard {...task as TaskProps} key={index} order={index + 1} onTaskDragStart={(e) => onDragStart(e,task)} _id={task._id as Id<"Tasks">}/>
+        ))}
+        <div className="task-card" draggable={false} onClick={handleAddTask}>
+            <h1>Add Task</h1>
+            <img
+              src="https://img.icons8.com/ios/50/000000/plus-math.png"
+              alt="add-card"
+            />
+        </div>
+        <TaskModal showModal={showModal} setShowModal={setShowModal} modalMessage="Add Task" cardId={id}/>
       </fieldset>
     );
-  }
+  } else {
+  Content = (
+    <div>
+      <h1>Something Went Wrong</h1>
+    </div>
+  );
+}
   return Content;
 };
