@@ -2,8 +2,8 @@
 export default {
  providers: [
     {
-        domain: "https://living-whale-25.clerk.accounts.dev",
+        domain: process.env.CLERK_JWT_ISSUER_DOMAIN,
         applicationID: "convex",
     }
- ]   // Add your Convex app's auth config here
+ ]
 }
