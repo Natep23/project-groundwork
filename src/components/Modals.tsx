@@ -11,10 +11,12 @@ type ModalShellProps = {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  /** "slideover" pins the panel to the right edge (used by the HQ console); "dialog" (default) centers it. */
+  variant?: "dialog" | "slideover";
 };
 
 /* Shared dialog shell: scrim, Escape/scrim-click close, focus containment. */
-export function ModalShell({ title, onClose, children }: ModalShellProps) {
+export function ModalShell({ title, onClose, children, variant = "dialog" }: ModalShellProps) {
   const panelRef = React.useRef<HTMLDivElement>(null);
   const titleId = React.useId();
   const onCloseRef = React.useRef(onClose);
@@ -68,7 +70,7 @@ export function ModalShell({ title, onClose, children }: ModalShellProps) {
    */
   return createPortal(
     <div
-      className="modal-scrim"
+      className={variant === "slideover" ? "modal-scrim modal-scrim--slideover" : "modal-scrim"}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
         e.stopPropagation();
@@ -79,7 +81,7 @@ export function ModalShell({ title, onClose, children }: ModalShellProps) {
     >
       <div
         ref={panelRef}
-        className="modal"
+        className={variant === "slideover" ? "modal modal--slideover" : "modal"}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

@@ -6,6 +6,7 @@ import { ConvexProviderWithClerk } from "convex/react-clerk";
 import App from "./App";
 import { api } from "./convex/_generated/api";
 import { logger } from "./lib/logger";
+import { BootSequence } from "./components/BootSequence";
 
 import "@fontsource-variable/big-shoulders-display";
 import "@fontsource-variable/archivo";
@@ -25,9 +26,7 @@ const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement)
 
 root.render(
   <React.StrictMode>
-    <div className="app-loading">
-      <span>Loading…</span>
-    </div>
+    <BootSequence />
   </React.StrictMode>
 );
 

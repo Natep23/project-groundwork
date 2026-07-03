@@ -9,6 +9,7 @@
  */
 
 import type * as Cards from "../Cards.js";
+import type * as Profile from "../Profile.js";
 import type * as PublicConfig from "../PublicConfig.js";
 import type * as ResearchLinks from "../ResearchLinks.js";
 import type * as Tasks from "../Tasks.js";
@@ -22,6 +23,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   Cards: typeof Cards;
+  Profile: typeof Profile;
   PublicConfig: typeof PublicConfig;
   ResearchLinks: typeof ResearchLinks;
   Tasks: typeof Tasks;

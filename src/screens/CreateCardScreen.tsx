@@ -8,6 +8,7 @@ import { ColorSwatches, DEFAULT_FLAG } from "../components/ColorSwatches";
 import { ArrowLeftIcon } from "../components/icons";
 import { useToast } from "../lib/toast";
 import { logger } from "../lib/logger";
+import { localDayKey } from "../lib/dayKey";
 
 export default function CreateCardScreen() {
   const addCard = useMutation(api.Cards.addCard);
@@ -29,7 +30,7 @@ export default function CreateCardScreen() {
     }
     setSaving(true);
     try {
-      await addCard({ title: title.trim(), description, color, phase });
+      await addCard({ title: title.trim(), description, color, phase, dayKey: localDayKey() });
       toast("Card added to the board");
       navigate("/");
     } catch (err) {

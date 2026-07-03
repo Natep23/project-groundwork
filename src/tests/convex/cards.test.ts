@@ -234,6 +234,98 @@ describe("addCard/updateCard validation", () => {
     });
 });
 
+describe("card order", () => {
+    test("addCard assigns increasing order within a phase", async () => {
+        const { asA } = setup();
+        const first = await asA.mutation(api.Cards.addCard, {
+            title: "first",
+            description: "",
+            phase: "Research",
+        });
+        const second = await asA.mutation(api.Cards.addCard, {
+            title: "second",
+            description: "",
+            phase: "Research",
+        });
+        const board = await asA.query(api.Cards.getBoard, {});
+        const firstCard = board.find((c) => c._id === first);
+        const secondCard = board.find((c) => c._id === second);
+        expect(firstCard?.order).toBeDefined();
+        expect(secondCard?.order).toBeDefined();
+        expect((secondCard!.order as number)).toBeGreaterThanOrEqual(firstCard!.order as number);
+        expect(board.map((c) => c._id)).toEqual([first, second]);
+    });
+
+    test("setCardOrder batch aborts entirely on a foreign id", async () => {
+        const { asA, asB } = setup();
+        const ownCard = await asA.mutation(api.Cards.addCard, {
+            title: "mine",
+            description: "",
+            phase: "Research",
+        });
+        const otherCard = await asB.mutation(api.Cards.addCard, {
+            title: "theirs",
+            description: "",
+            phase: "Research",
+        });
+        await expect(
+            asA.mutation(api.Cards.setCardOrder, {
+                updates: [
+                    { id: ownCard, order: 100 },
+                    { id: otherCard, order: 200 },
+                ],
+            }),
+        ).rejects.toThrow("Not found");
+        const card = await asA.query(api.Cards.getCardById, { id: ownCard });
+        expect(card?.order).not.toBe(100);
+    });
+
+    test("setCardOrder reorders owned cards", async () => {
+        const { asA } = setup();
+        const a = await asA.mutation(api.Cards.addCard, {
+            title: "a",
+            description: "",
+            phase: "Research",
+        });
+        const b = await asA.mutation(api.Cards.addCard, {
+            title: "b",
+            description: "",
+            phase: "Research",
+        });
+        await asA.mutation(api.Cards.setCardOrder, {
+            updates: [
+                { id: a, order: 20 },
+                { id: b, order: 10 },
+            ],
+        });
+        const board = await asA.query(api.Cards.getBoard, {});
+        expect(board.map((c) => c._id)).toEqual([b, a]);
+    });
+});
+
+describe("moveCard", () => {
+    test("moveCard atomically sets phase + order and requires ownership", async () => {
+        const { asA, asB } = setup();
+        const cardId = await asA.mutation(api.Cards.addCard, {
+            title: "c",
+            description: "",
+            phase: "Research",
+        });
+        await asA.mutation(api.Cards.moveCard, {
+            id: cardId,
+            toPhase: "In Progress",
+            order: 5,
+        });
+        const card = await asA.query(api.Cards.getCardById, { id: cardId });
+        expect(card?.phase).toBe("In Progress");
+        expect(card?.order).toBe(5);
+
+        await expect(
+            asB.mutation(api.Cards.moveCard, { id: cardId, toPhase: "Completed", order: 1 }),
+        ).rejects.toThrow("Not found");
+    });
+});
+
 describe("changePhase and removeCard", () => {
     test("changePhase updates the phase for the owner", async () => {
         const { asA } = setup();

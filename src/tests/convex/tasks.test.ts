@@ -218,4 +218,41 @@ describe("behavior", () => {
         await asA.mutation(api.Tasks.removeTask, { id: taskId });
         expect(await asA.query(api.Tasks.getTasks, { cardId })).toHaveLength(0);
     });
+
+    test("removeTask cascades its own research links but not the card's or other tasks'", async () => {
+        const { t, asA, cardId } = await setup();
+        const taskId = await asA.mutation(api.Tasks.addTask, {
+            cardId,
+            taskDescription: "doomed",
+            priority: 1,
+        });
+        const otherTaskId = await asA.mutation(api.Tasks.addTask, {
+            cardId,
+            taskDescription: "keep",
+            priority: 1,
+        });
+        await asA.mutation(api.ResearchLinks.addLink, {
+            cardId,
+            taskId,
+            link: "https://example.com/task-link",
+        });
+        await asA.mutation(api.ResearchLinks.addLink, {
+            cardId,
+            taskId: otherTaskId,
+            link: "https://example.com/keep-task-link",
+        });
+        await asA.mutation(api.ResearchLinks.addLink, {
+            cardId,
+            link: "https://example.com/card-link",
+        });
+
+        await asA.mutation(api.Tasks.removeTask, { id: taskId });
+
+        await t.run(async (ctx) => {
+            const links = await ctx.db.query("ResearchLinks").collect();
+            expect(links.map((l) => l.link).sort()).toEqual(
+                ["https://example.com/card-link", "https://example.com/keep-task-link"].sort(),
+            );
+        });
+    });
 });

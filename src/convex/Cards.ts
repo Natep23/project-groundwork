@@ -1,7 +1,15 @@
 import { query, mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
-import { phaseValidator } from "./schema";
-import { requireOwnedCard, requireUser } from "./helpers";
+import { Phase, phaseValidator } from "./schema";
+import { applyEngagement, dayKeyFromTs, requireOwnedCard, requireUser } from "./helpers";
+import { Doc } from "./_generated/dataModel";
+import { MutationCtx } from "./_generated/server";
+
+const PHASE_ORDER: Record<Phase, number> = {
+    Research: 0,
+    "In Progress": 1,
+    Completed: 2,
+};
 
 const TITLE_MAX = 200;
 const DESCRIPTION_MAX = 2000;
@@ -40,7 +48,7 @@ export const getBoard = query({
             .query("Cards")
             .withIndex("by_user", (q) => q.eq("userId", userId))
             .collect();
-        return await Promise.all(
+        const enriched = await Promise.all(
             cards.map(async (card) => {
                 const tasks = await ctx.db
                     .query("Tasks")
@@ -53,6 +61,13 @@ export const getBoard = query({
                 };
             }),
         );
+        return enriched.sort((a, b) => {
+            const phaseDiff = PHASE_ORDER[a.phase] - PHASE_ORDER[b.phase];
+            if (phaseDiff !== 0) return phaseDiff;
+            const aOrder = a.order ?? a._creationTime;
+            const bOrder = b.order ?? b._creationTime;
+            return aOrder - bOrder;
+        });
     },
 });
 
@@ -80,16 +95,26 @@ export const addCard = mutation({
         description: v.string(),
         color: v.optional(v.string()),
         phase: phaseValidator,
+        dayKey: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         const userId = await requireUser(ctx);
-        return await ctx.db.insert("Cards", {
+        const ts = Date.now();
+        const dayKey = args.dayKey ?? dayKeyFromTs(ts);
+        const id = await ctx.db.insert("Cards", {
             title: validateTitle(args.title),
             description: validateDescription(args.description),
             ...(args.color !== undefined ? { color: validateColor(args.color) } : {}),
             phase: args.phase,
             userId,
+            order: ts,
         });
+        await applyEngagement(ctx, userId, {
+            xpDelta: 5,
+            dayKey,
+            event: { type: "card_created", meta: { cardId: id } },
+        });
+        return id;
     },
 });
 
@@ -112,11 +137,68 @@ export const updateCard = mutation({
     },
 });
 
+/**
+ * Shared ship-award path for `changePhase` and `moveCard`: patches phase +
+ * order atomically, and on the first-ever move to Completed (guarded by
+ * `everShipped`) awards ship xp, stamps `shippedAt`, and emits the
+ * `card_shipped` event (which also drives achievement evaluation).
+ */
+async function moveCardWithShipAward(
+    ctx: MutationCtx,
+    card: Doc<"Cards">,
+    toPhase: Phase,
+    order: number,
+    dayKeyArg: string | undefined,
+): Promise<void> {
+    const firstShip = toPhase === "Completed" && !card.everShipped;
+    const ts = Date.now();
+    await ctx.db.patch(card._id, {
+        phase: toPhase,
+        order,
+        ...(firstShip ? { everShipped: true, shippedAt: ts } : {}),
+    });
+    if (firstShip) {
+        const dayKey = dayKeyArg ?? dayKeyFromTs(ts);
+        await applyEngagement(ctx, card.userId, {
+            xpDelta: 50,
+            dayKey,
+            event: { type: "card_shipped", meta: { cardId: card._id } },
+        });
+    }
+}
+
 export const changePhase = mutation({
-    args: { id: v.id("Cards"), phase: phaseValidator },
+    args: { id: v.id("Cards"), phase: phaseValidator, dayKey: v.optional(v.string()) },
     handler: async (ctx, args) => {
-        await requireOwnedCard(ctx, args.id);
-        await ctx.db.patch(args.id, { phase: args.phase });
+        const card = await requireOwnedCard(ctx, args.id);
+        await moveCardWithShipAward(ctx, card, args.phase, Date.now(), args.dayKey);
+    },
+});
+
+export const moveCard = mutation({
+    args: {
+        id: v.id("Cards"),
+        toPhase: phaseValidator,
+        order: v.number(),
+        dayKey: v.optional(v.string()),
+    },
+    handler: async (ctx, args) => {
+        const card = await requireOwnedCard(ctx, args.id);
+        await moveCardWithShipAward(ctx, card, args.toPhase, args.order, args.dayKey);
+    },
+});
+
+export const setCardOrder = mutation({
+    args: {
+        updates: v.array(v.object({ id: v.id("Cards"), order: v.number() })),
+    },
+    handler: async (ctx, args) => {
+        for (const update of args.updates) {
+            await requireOwnedCard(ctx, update.id);
+        }
+        for (const update of args.updates) {
+            await ctx.db.patch(update.id, { order: update.order });
+        }
     },
 });
 

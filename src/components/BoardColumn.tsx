@@ -1,4 +1,5 @@
 import { useDroppable } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Id } from "../convex/_generated/dataModel";
 import type { Phase } from "../convex/schema";
 import { BoardCard, Card } from "./card";
@@ -26,10 +27,13 @@ type Props = {
   cards: BoardCard[];
   onMove: (id: Id<"Cards">, phase: Phase) => void;
   onDelete: (id: Id<"Cards">) => void;
+  dragDisabled?: boolean;
 };
 
-export function BoardColumn({ phase, cards, onMove, onDelete }: Props) {
-  const { setNodeRef, isOver } = useDroppable({ id: phase });
+export function BoardColumn({ phase, cards, onMove, onDelete, dragDisabled = false }: Props) {
+  // The column is its own droppable (id = phase) so empty columns and the
+  // gaps between cards remain valid drop targets for cross-phase moves.
+  const { setNodeRef, isOver } = useDroppable({ id: phase, data: { phase } });
   const meta = COLUMN_META[phase];
 
   return (
@@ -44,16 +48,24 @@ export function BoardColumn({ phase, cards, onMove, onDelete }: Props) {
         <span className="board-column__count">{cards.length}</span>
       </div>
       <div className="board-column__body">
-        {cards.length === 0 ? (
-          <div className="empty">
-            <span className="empty__title">{meta.empty}</span>
-            <span className="empty__hint">{meta.hint}</span>
-          </div>
-        ) : (
-          cards.map((card) => (
-            <Card key={card._id} card={card} onMove={onMove} onDelete={onDelete} />
-          ))
-        )}
+        <SortableContext items={cards.map((c) => c._id)} strategy={verticalListSortingStrategy}>
+          {cards.length === 0 ? (
+            <div className="empty">
+              <span className="empty__title">{meta.empty}</span>
+              <span className="empty__hint">{meta.hint}</span>
+            </div>
+          ) : (
+            cards.map((card) => (
+              <Card
+                key={card._id}
+                card={card}
+                onMove={onMove}
+                onDelete={onDelete}
+                dragDisabled={dragDisabled}
+              />
+            ))
+          )}
+        </SortableContext>
       </div>
     </section>
   );

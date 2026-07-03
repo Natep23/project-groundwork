@@ -114,6 +114,74 @@ describe("addLink validation", () => {
     });
 });
 
+describe("task-scoped links", () => {
+    test("addLink with taskId attaches to a task; getLinks stays card-level only", async () => {
+        const { asA, cardId } = await setup();
+        const taskId = await asA.mutation(api.Tasks.addTask, {
+            cardId,
+            taskDescription: "t",
+            priority: 1,
+        });
+        await asA.mutation(api.ResearchLinks.addLink, {
+            cardId,
+            taskId,
+            link: "https://example.com/task",
+        });
+        await asA.mutation(api.ResearchLinks.addLink, {
+            cardId,
+            link: "https://example.com/card",
+        });
+
+        const cardLinks = await asA.query(api.ResearchLinks.getLinks, { cardId });
+        expect(cardLinks.map((l) => l.link)).toEqual(["https://example.com/card"]);
+
+        const taskLinks = await asA.query(api.ResearchLinks.getTaskLinks, { taskId });
+        expect(taskLinks.map((l) => l.link)).toEqual(["https://example.com/task"]);
+    });
+
+    test("addLink rejects a taskId belonging to a different card", async () => {
+        const { asA, cardId } = await setup();
+        const otherCardId = await asA.mutation(api.Cards.addCard, {
+            title: "other",
+            description: "",
+            phase: "Research",
+        });
+        const foreignTaskId = await asA.mutation(api.Tasks.addTask, {
+            cardId: otherCardId,
+            taskDescription: "t",
+            priority: 1,
+        });
+        await expect(
+            asA.mutation(api.ResearchLinks.addLink, {
+                cardId,
+                taskId: foreignTaskId,
+                link: "https://example.com",
+            }),
+        ).rejects.toThrow("Not found");
+    });
+
+    test("addLink rejects a taskId owned by another user", async () => {
+        const { asA, asB, cardId } = await setup();
+        const bCardId = await asB.mutation(api.Cards.addCard, {
+            title: "b",
+            description: "",
+            phase: "Research",
+        });
+        const bTaskId = await asB.mutation(api.Tasks.addTask, {
+            cardId: bCardId,
+            taskDescription: "t",
+            priority: 1,
+        });
+        await expect(
+            asA.mutation(api.ResearchLinks.addLink, {
+                cardId,
+                taskId: bTaskId,
+                link: "https://example.com",
+            }),
+        ).rejects.toThrow("Not found");
+    });
+});
+
 describe("removeLink", () => {
     test("owner can remove their link", async () => {
         const { asA, cardId } = await setup();

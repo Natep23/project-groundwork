@@ -1,9 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useDraggable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Doc, Id } from "../convex/_generated/dataModel";
 import type { Phase } from "../convex/schema";
-import { ArrowLeftIcon, ArrowRightIcon, TrashIcon } from "./icons";
+import { ArrowLeftIcon, ArrowRightIcon, GripIcon, TrashIcon } from "./icons";
 import { ConfirmDeleteModal } from "./Modals";
 
 export type BoardCard = Doc<"Cards"> & {
@@ -61,12 +62,18 @@ function Progress({ card }: { card: BoardCard }) {
   );
 }
 
-export function Card({ card, onMove, onDelete }: { card: BoardCard } & CardActions) {
+export function Card({
+  card,
+  onMove,
+  onDelete,
+  dragDisabled = false,
+}: { card: BoardCard; dragDisabled?: boolean } & CardActions) {
   const navigate = useNavigate();
   const [confirming, setConfirming] = React.useState(false);
-  const { listeners, setNodeRef, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card._id,
-    data: { card },
+    data: { card, phase: card.phase },
+    disabled: dragDisabled,
   });
 
   const phaseIndex = PHASES.indexOf(card.phase);
@@ -76,16 +83,23 @@ export function Card({ card, onMove, onDelete }: { card: BoardCard } & CardActio
   const open = () => navigate(`/card/${card._id}`);
 
   /*
-   * The wrapper div is a pointer convenience (drag surface + click-to-open);
-   * it deliberately has no ARIA role. The title button is the accessible way
-   * in, and the arrow buttons are the keyboard path for moving phases.
+   * The wrapper div is a pointer convenience (click-to-open); it deliberately
+   * carries no drag attributes/role, so it isn't a redundant tab stop with a
+   * concatenated accessible name. Dragging goes through the dedicated grip
+   * handle (like the task list); the title button is the accessible way in,
+   * and the arrow buttons are the keyboard path for moving phases.
    */
   return (
     <div
       ref={setNodeRef}
       className={isDragging ? "kcard kcard--dragging" : "kcard"}
-      style={{ "--flag": card.color } as React.CSSProperties}
-      {...listeners}
+      style={
+        {
+          "--flag": card.color,
+          transform: CSS.Transform.toString(transform),
+          transition,
+        } as React.CSSProperties
+      }
       onClick={open}
     >
       <h3 className="kcard__title">
@@ -101,6 +115,17 @@ export function Card({ card, onMove, onDelete }: { card: BoardCard } & CardActio
       </h3>
       {card.description && <p className="kcard__desc">{card.description}</p>}
       <div className="kcard__footer">
+        <button
+          className="icon-btn kcard__grip"
+          aria-label={`Reorder card "${card.title}"`}
+          title="Drag to reorder"
+          disabled={dragDisabled}
+          {...attributes}
+          {...listeners}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripIcon />
+        </button>
         <Progress card={card} />
         <div className="kcard__actions">
           {prevPhase && (

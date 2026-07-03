@@ -1,13 +1,21 @@
 import React from "react";
 
 export const THEMES = [
-  { id: "daylight", label: "Daylight" },
-  { id: "blueprint", label: "Blueprint" },
-  { id: "graphite", label: "Graphite" },
-  { id: "jobsite", label: "Jobsite" },
+  { id: "daylight", label: "Daylight", free: true },
+  { id: "blueprint", label: "Blueprint", free: true },
+  { id: "graphite", label: "Graphite", free: true },
+  { id: "jobsite", label: "Jobsite", free: true },
+  { id: "arc-reactor", label: "Arc Reactor", free: false },
+  { id: "command", label: "Command", free: false },
+  { id: "phosphor", label: "Phosphor", free: false },
 ] as const;
 
 export type ThemeId = (typeof THEMES)[number]["id"];
+
+/** Themes every user can select regardless of profile/unlock state. */
+export const FREE_THEME_IDS: ThemeId[] = THEMES.filter((t) => t.free).map((t) => t.id);
+
+export const DEFAULT_THEME: ThemeId = "daylight";
 
 const STORAGE_KEY = "groundwork-theme";
 
@@ -25,6 +33,16 @@ const ThemeContext = React.createContext<{
   setTheme: (theme: ThemeId) => void;
 } | null>(null);
 
+const THEME_BG: Record<ThemeId, string> = {
+  daylight: "#f3f4f1",
+  blueprint: "#10273f",
+  graphite: "#17181a",
+  jobsite: "#ffffff",
+  "arc-reactor": "#03070a",
+  command: "#14180f",
+  phosphor: "#030904",
+};
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = React.useState<ThemeId>(initialTheme);
 
@@ -32,15 +50,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem(STORAGE_KEY, theme);
     // Keep the browser chrome color in step with the active theme's canvas.
-    const bg: Record<ThemeId, string> = {
-      daylight: "#f3f4f1",
-      blueprint: "#10273f",
-      graphite: "#17181a",
-      jobsite: "#ffffff",
-    };
-    document
-      .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", bg[theme]);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME_BG[theme]);
   }, [theme]);
 
   const value = React.useMemo(() => ({ theme, setTheme }), [theme]);

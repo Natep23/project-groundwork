@@ -10,6 +10,7 @@ import { ConfirmDeleteModal, EditCardModal } from "../components/Modals";
 import { ArrowLeftIcon, PencilIcon, TrashIcon } from "../components/icons";
 import { useToast } from "../lib/toast";
 import { logger } from "../lib/logger";
+import { localDayKey } from "../lib/dayKey";
 
 export default function CardScreen() {
   const { id } = useParams<{ id: string }>();
@@ -50,7 +51,7 @@ export default function CardScreen() {
 
   const handlePhaseChange = async (phase: Phase) => {
     try {
-      await changePhase({ id: card._id, phase });
+      await changePhase({ id: card._id, phase, dayKey: localDayKey() });
       toast(`Moved to ${phase}`);
     } catch (err) {
       logger.error("changePhase failed", err);

@@ -60,3 +60,28 @@ export const LinkIcon = (props: IconProps) => (
     <path d="M6.5 9.5l3-3M5 11l-.9.9a2.5 2.5 0 01-3.5-3.5L3.5 5.5M11 5l.9-.9a2.5 2.5 0 013.5 3.5L12.5 10.5" transform="translate(0 .5) scale(.93)" />
   </svg>
 );
+
+export const FlameIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M8 1.5c1 2 3.2 3.2 3.2 6a3.2 3.2 0 01-6.4 0c0-1 .4-1.7.9-2.3-.1.9.2 1.6.9 1.9-.4-2 .6-3.4 1.4-5.6zM6 12.2c.4.4 1 .6 1.7.5-.7-.6-.8-1.4-.4-2.2.6.5.9 1.1.9 1.9 0 1-.8 1.9-1.9 1.9-1.2 0-2.1-.9-2.1-2.1 0-.9.6-1.6 1.8-2 0 .8 0 1.5 0 2z" />
+  </svg>
+);
+
+export const TrophyIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M4.5 2.5h7v3a3.5 3.5 0 01-7 0v-3zM4.5 3.5H2v1a2.5 2.5 0 002.5 2.5M11.5 3.5H14v1a2.5 2.5 0 01-2.5 2.5M8 9v2.5M6 13.5h4M6.5 11.5h3v2h-3z" />
+  </svg>
+);
+
+export const LockIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <rect x="3.5" y="7" width="9" height="6.5" rx="1" />
+    <path d="M5.5 7V5a2.5 2.5 0 015 0v2" />
+  </svg>
+);
+
+export const XIcon = (props: IconProps) => (
+  <svg {...base} {...props}>
+    <path d="M4 4l8 8M12 4l-8 8" />
+  </svg>
+);

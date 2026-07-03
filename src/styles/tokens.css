@@ -127,3 +127,90 @@
   --border-w: 2px;
   --column-border-style: solid;
 }
+
+/* ---- Arc Reactor (unlockable — Level 3 / Shipped It): a JARVIS HUD ---- */
+/* Small-text contrast checked: --ink-muted on --surface ~= 11.8:1, --ink on
+   --surface is near-white-on-near-black. --accent-ink on --accent ~= 13:1. */
+[data-theme="arc-reactor"] {
+  color-scheme: dark;
+  --bg: #03070a;
+  --grid-line: rgba(94, 234, 255, 0.05);
+  --grid-line-major: rgba(94, 234, 255, 0.1);
+  --surface: #0a1114;
+  --surface-2: #0f1a1f;
+  --scrim: rgba(0, 4, 5, 0.72);
+  --ink: #eafbff;
+  --ink-muted: #8fd7e8;
+  --ink-faint: #4f7480;
+  --line: rgba(94, 234, 255, 0.2);
+  --line-strong: rgba(94, 234, 255, 0.42);
+  --accent: #34e0ff;
+  --accent-ink: #00181c;
+  --accent-soft: rgba(52, 224, 255, 0.13);
+  --danger: #ff5d5d;
+  --danger-ink: #240000;
+  --ok: #4be6a0;
+  --shadow-1: 0 0 0 1px rgba(52, 224, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-2: 0 0 26px rgba(52, 224, 255, 0.22), 0 10px 28px rgba(0, 0, 0, 0.6);
+  --radius: 3px;
+  --border-w: 1px;
+  --column-border-style: solid;
+}
+
+/* ---- Command (unlockable — Level 5): military tactical console ---- */
+/* Small-text contrast checked: --ink-muted on --surface ~= 8.7:1;
+   --accent-ink on --accent ~= 9.5:1. */
+[data-theme="command"] {
+  color-scheme: dark;
+  --bg: #14180f;
+  --grid-line: rgba(200, 210, 170, 0.05);
+  --grid-line-major: rgba(200, 210, 170, 0.1);
+  --surface: #1c2216;
+  --surface-2: #242b1c;
+  --scrim: rgba(10, 12, 7, 0.72);
+  --ink: #e9ead9;
+  --ink-muted: #b9c0a2;
+  --ink-faint: #6e7660;
+  --line: #3a4230;
+  --line-strong: #56603f;
+  --accent: #e8a13a;
+  --accent-ink: #1c1200;
+  --accent-soft: rgba(232, 161, 58, 0.14);
+  --danger: #d9503f;
+  --danger-ink: #220400;
+  --ok: #7fae4a;
+  --shadow-1: 1px 1px 0 rgba(0, 0, 0, 0.5);
+  --shadow-2: 3px 3px 0 rgba(0, 0, 0, 0.55);
+  --radius: 1px;
+  --border-w: 2px;
+  --column-border-style: solid;
+}
+
+/* ---- Phosphor (unlockable — Level 7 / Locked In): CRT terminal green ---- */
+/* Small-text contrast checked: --ink-muted on --surface ~= 11.2:1; --ink
+   is near-white-green-on-near-black; --accent-ink on --accent is ~ high. */
+[data-theme="phosphor"] {
+  color-scheme: dark;
+  --bg: #030904;
+  --grid-line: rgba(57, 255, 106, 0.05);
+  --grid-line-major: rgba(57, 255, 106, 0.09);
+  --surface: #06120a;
+  --surface-2: #0a1c10;
+  --scrim: rgba(0, 5, 2, 0.76);
+  --ink: #b8ffcf;
+  --ink-muted: #6fdc8a;
+  --ink-faint: #2f6b40;
+  --line: rgba(70, 255, 140, 0.2);
+  --line-strong: rgba(70, 255, 140, 0.4);
+  --accent: #39ff6a;
+  --accent-ink: #001604;
+  --accent-soft: rgba(57, 255, 106, 0.14);
+  --danger: #ff6b57;
+  --danger-ink: #1a0400;
+  --ok: #39ff6a;
+  --shadow-1: 0 0 0 1px rgba(57, 255, 106, 0.12);
+  --shadow-2: 0 0 30px rgba(57, 255, 106, 0.2);
+  --radius: 0px;
+  --border-w: 1px;
+  --column-border-style: solid;
+}

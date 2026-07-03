@@ -1,6 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
-import { requireOwnedCard, requireOwnedLink } from "./helpers";
+import { requireOwnedCard, requireOwnedLink, requireOwnedTask } from "./helpers";
 
 const LINK_MAX = 2000;
 const ALLOWED_SCHEMES = new Set(["obsidian:", "http:", "https:"]);
@@ -30,21 +30,40 @@ export const getLinks = query({
     args: { cardId: v.id("Cards") },
     handler: async (ctx, args) => {
         await requireOwnedCard(ctx, args.cardId);
-        return await ctx.db
+        const links = await ctx.db
             .query("ResearchLinks")
             .withIndex("by_card", (q) => q.eq("cardId", args.cardId))
+            .collect();
+        return links.filter((link) => link.taskId === undefined);
+    },
+});
+
+export const getTaskLinks = query({
+    args: { taskId: v.id("Tasks") },
+    handler: async (ctx, args) => {
+        await requireOwnedTask(ctx, args.taskId);
+        return await ctx.db
+            .query("ResearchLinks")
+            .withIndex("by_task", (q) => q.eq("taskId", args.taskId))
             .collect();
     },
 });
 
 export const addLink = mutation({
-    args: { cardId: v.id("Cards"), link: v.string() },
+    args: { cardId: v.id("Cards"), link: v.string(), taskId: v.optional(v.id("Tasks")) },
     handler: async (ctx, args) => {
         const card = await requireOwnedCard(ctx, args.cardId);
+        if (args.taskId !== undefined) {
+            const task = await requireOwnedTask(ctx, args.taskId);
+            if (task.cardId !== args.cardId) {
+                throw new ConvexError("Not found");
+            }
+        }
         return await ctx.db.insert("ResearchLinks", {
             link: validateLink(args.link),
             cardId: args.cardId,
             userId: card.userId,
+            ...(args.taskId !== undefined ? { taskId: args.taskId } : {}),
         });
     },
 });
