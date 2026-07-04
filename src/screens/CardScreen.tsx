@@ -11,6 +11,7 @@ import { ArrowLeftIcon, PencilIcon, TrashIcon } from "../components/icons";
 import { useToast } from "../lib/toast";
 import { logger } from "../lib/logger";
 import { localDayKey } from "../lib/dayKey";
+import { Loader } from "../components/Loader";
 
 export default function CardScreen() {
   const { id } = useParams<{ id: string }>();
@@ -26,11 +27,7 @@ export default function CardScreen() {
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
 
   if (card === undefined) {
-    return (
-      <div className="app-loading" role="status">
-        <span>Loading the card…</span>
-      </div>
-    );
+    return <Loader as="div" className="app-loading" label="Loading the card…" />;
   }
 
   if (card === null) {

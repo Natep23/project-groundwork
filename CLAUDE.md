@@ -16,6 +16,47 @@ GroundWork is a personal Kanban-style dev-tracking board: cards move through `Re
 - `npm run build` - typecheck + production build to `dist/`
 - `npx convex env list` / `npx convex env set <NAME> <VALUE>` - inspect/update backend env vars
 
+## Multi-agent workflow
+
+How substantial work is run on this repo (Phases 1–2 used this). The goal is the highest-quality result at the lowest cost — so work is pushed to the cheapest capable model and escalation is rare and deliberate.
+
+### Model tiers
+
+From cheapest to most capable: **Haiku → Sonnet → Opus → Fable**.
+
+- **Haiku** — super-minimal, mechanical changes (tiny string/config edits, trivial one-file fixes).
+- **Sonnet** — the default workhorse for feature/workstream implementation and tests.
+- **Opus** — orchestration, planning, major refactors, and the pre-Fable code review.
+- **Fable** — advisor/reviewer only. Not an implementer. If advisor mode fails, spin up a Fable 5 subagent only when needed for advising
+
+Always assign a task to the lowest tier that can do it well. Low-level/quick tasks (doc updates, quick string changes, config tweaks) skip the whole process below — assign them directly to a low-cost model at any time. Work in parallel as much as possible.
+
+### Escalation (only when truly stuck)
+
+A model consults **exactly one tier up**, and only when genuinely stuck — never for routine confirmation, because escalation costs money. The only advice a model takes is from the next tier:
+
+- Haiku → Sonnet
+- Sonnet → Opus
+- Opus → Fable
+
+**Only Opus may contact Fable.** Sonnet/Haiku never reach Fable directly — if something needs Fable, it travels up the chain to Opus first.
+
+**Lower tiers explicitly trust higher tiers.** When a model consults the tier above, it takes that guidance as direction — it does not push back or re-litigate. Haiku→Sonnet and Sonnet→Opus are trust-and-follow only.
+
+The **one** exception is **Opus → Fable**: if Opus genuinely doubts Fable's guidance, it may ask **at most 2 clarifying questions per topic**. If doubt remains after that, Opus stops questioning Fable and passes the decision **up to the user** for a final direction call — it does not keep debating. No other tier pair may question upward. Every question (to Fable or the user) is a real cost, so use them sparingly and **trust Fable more often than not**.
+
+### For substantial (planned) tasks
+
+1. **Plan (Opus).** Opus writes the plan(s), one unit of work per file/section, each ending with a blank **`Recommended subagent:`** line left for Fable to fill.
+2. **Plan review + model assignment (Fable).** Opus passes the plan to Fable, which reviews it and fills in the recommended subagent/model for each workstream. (Opus is the only tier that may invoke Fable.)
+3. **Execute.** The assigned models implement their workstreams, escalating only per the chain above. Verify between workstreams (typecheck + tests + build).
+4. **Pre-Fable code review (Opus).** Before any final review, Opus does a quick review of *all* the code produced — this quality gate is mandatory and is what Opus hands to Fable.
+5. **Final review (Fable).** Fable does the autonomous quality-check review. Opus **trusts and applies** Fable's findings, re-verifies (typecheck + tests + build), then commits. Opus only questions a finding under the Opus → Fable rule above (≤2 questions per topic, then escalate to the user) — it does not silently overrule Fable.
+
+### End-of-task report (required)
+
+At the end of every task — planned or quick — close with a **feature chart**: a table of what was added/changed, each with a brief explanation, plus as much execution detail as available. Include, at minimum: per-workstream **tokens used** and **time spent** (from each subagent's completion metrics: `subagent_tokens`, `tool_uses`, `duration_ms`), the model that did the work, tests added/passing, and a totals row. Give the most detail the run makes available.
+
 ## Architecture
 
 - **Routing** (`src/App.tsx`): the route tree is gated by Clerk's `<Authenticated>`/`<Unauthenticated>`/`<AuthLoading>` wrappers, not a router guard. Signed-out users only ever see `StartScreen`; the three routes (`/`, `/create-card`, `/card/:id`) only render once Clerk resolves a session. Providers nest: ThemeProvider > ErrorBoundary > ToastProvider > Router.
@@ -43,7 +84,7 @@ Every query/mutation except `PublicConfig.getClerkPublishableKey` requires a Cle
 
 ### Engagement engine
 
-Gamification (XP, levels, streaks, achievements, theme unlocks) is **server-authoritative** — the client never writes progression state. `helpers.ts` `applyEngagement(ctx, userId, {xpDelta, dayKey, event})` is the single write path: it get-or-creates the profile, applies XP, computes level-ups (emitting `level_up`, unlocking level-gated themes), advances the streak, appends the `Events` row, and grants achievements. Pure exported helpers `computeLevel`/`dayDiff`/`sanitizeDayKey` are unit-tested directly. `dayKey` is client-local (timezone-correct); it's trusted only for format (`sanitizeDayKey` falls a malformed key back to the server day so it can't corrupt the `by_user_day` heatmap index). Anti-farm: task/ship XP is granted once via `everCompleted`/`everShipped`. XP curve + achievement catalog + theme-unlock table live in `plans/01-api-contract.md` (mirrored client-side in `src/lib/engagement.ts` for display only).
+Gamification (XP, levels, streaks, achievements, theme unlocks) is **server-authoritative** — the client never writes progression state. `helpers.ts` `applyEngagement(ctx, userId, {xpDelta, dayKey, event})` is the single write path: it get-or-creates the profile, applies XP, computes level-ups (emitting `level_up`, unlocking level-gated themes), advances the streak, appends the `Events` row, and grants achievements. Pure exported helpers `computeLevel`/`dayDiff`/`sanitizeDayKey` are unit-tested directly. `dayKey` is client-local (timezone-correct); it's trusted only for format (`sanitizeDayKey` falls a malformed key back to the server day so it can't corrupt the `by_user_day` heatmap index). Anti-farm: task/ship XP is granted once via `everCompleted`/`everShipped`. XP curve + achievement catalog + theme-unlock table live in `plans/01-api-contract.md` (mirrored client-side in `src/lib/engagement.ts` for display only). The `remix_unlocked` achievement ("Master Builder", granted when all three unlockable themes are unlocked — evaluated *after* the level-gated unlocks in `applyEngagement` so a same-call level-up counts) is the sole server-authoritative gate for the client "remix" capability; `canRemix(profile)` in `engagement.ts` derives from it, so no schema change was needed. Frontend theme/kit/gallery/remix details live in `src/CLAUDE.md`.
 
 ### Functions
 

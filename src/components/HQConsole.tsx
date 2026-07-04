@@ -2,6 +2,10 @@ import { useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { ModalShell } from "./Modals";
 import { FlameIcon, LockIcon, TrophyIcon } from "./icons";
+import { Loader } from "./Loader";
+import { Progress } from "./Progress";
+import { SectionHeading } from "./Typewriter";
+import { useThemeKit } from "../lib/themeKit";
 import {
   ACHIEVEMENTS,
   buildHeatmap,
@@ -36,6 +40,7 @@ export function HQConsole({ open, profile, onClose }: HQConsoleProps) {
   // Server defaults `sinceDayKey` to today-90d, which comfortably covers the
   // 12-week heatmap and 8-week velocity window this panel renders.
   const activity = useQuery(api.Profile.getActivity, open ? {} : "skip");
+  const kit = useThemeKit();
 
   if (!open) return null;
 
@@ -55,16 +60,18 @@ export function HQConsole({ open, profile, onClose }: HQConsoleProps) {
           <div className="hq__level-row">
             <span className="hq__level-badge">L{progress.level}</span>
             <div className="hq__level-detail">
-              <span
-                className="briefing__xp-track hq__xp-track"
-                role="progressbar"
-                aria-valuenow={progress.pct}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={`${progress.xpIntoLevel} of ${progress.xpForNextLevel} XP to level ${progress.level + 1}`}
-              >
-                <span className="briefing__xp-fill" style={{ width: `${progress.pct}%` }} />
-              </span>
+              {kit === "arc-reactor" && (
+                <span className="hq__reactor-label mono" aria-hidden="true">
+                  Arc reactor — {progress.pct}%
+                </span>
+              )}
+              <Progress
+                value={progress.pct}
+                max={100}
+                label={`${progress.xpIntoLevel} of ${progress.xpForNextLevel} XP to level ${progress.level + 1}`}
+                trackClassName="briefing__xp-track hq__xp-track"
+                fillClassName="briefing__xp-fill"
+              />
               <span className="mono hq__xp-label">
                 {progress.xpIntoLevel}/{progress.xpForNextLevel} XP to Level {progress.level + 1}
               </span>
@@ -86,7 +93,7 @@ export function HQConsole({ open, profile, onClose }: HQConsoleProps) {
         </section>
 
         <section className="hq__section" aria-label="Achievements">
-          <h3 className="hq__section-title">Achievements</h3>
+          <SectionHeading className="hq__section-title">Achievements</SectionHeading>
           <ul className="hq__achievements">
             {ACHIEVEMENTS.map((ach) => {
               const earned = profile.achievements.includes(ach.id);
@@ -108,9 +115,9 @@ export function HQConsole({ open, profile, onClose }: HQConsoleProps) {
         </section>
 
         <section className="hq__section" aria-label="Activity heatmap">
-          <h3 className="hq__section-title">Activity (last {HEATMAP_WEEKS} weeks)</h3>
+          <SectionHeading className="hq__section-title">{`Activity (last ${HEATMAP_WEEKS} weeks)`}</SectionHeading>
           {activity === undefined ? (
-            <p className="mono hq__loading">Loading…</p>
+            <Loader as="p" className="mono hq__loading" label="Loading…" />
           ) : (
             <div className="hq__heatmap" role="img" aria-label={`Activity heatmap for the last ${HEATMAP_WEEKS} weeks`}>
               {heatColumns.map((col, i) => (
@@ -129,9 +136,9 @@ export function HQConsole({ open, profile, onClose }: HQConsoleProps) {
         </section>
 
         <section className="hq__section" aria-label="Weekly velocity">
-          <h3 className="hq__section-title">Weekly velocity</h3>
+          <SectionHeading className="hq__section-title">Weekly velocity</SectionHeading>
           {activity === undefined ? (
-            <p className="mono hq__loading">Loading…</p>
+            <Loader as="p" className="mono hq__loading" label="Loading…" />
           ) : (
             <div className="hq__velocity">
               {velocity.map((w) => (

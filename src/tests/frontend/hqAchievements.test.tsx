@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 
 // HQConsole only reads api.Profile.getActivity; stub it out so the
@@ -8,6 +8,7 @@ vi.mock("convex/react", () => ({
 }));
 
 import { HQConsole } from "../../components/HQConsole";
+import { ThemeProvider } from "../../lib/theme";
 import { ACHIEVEMENTS, type Profile } from "../../lib/engagement";
 
 function makeProfile(overrides: Partial<Profile> = {}): Profile {
@@ -28,9 +29,19 @@ function makeProfile(overrides: Partial<Profile> = {}): Profile {
 }
 
 describe("HQConsole achievements grid", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    document.documentElement.removeAttribute("data-theme");
+    document.documentElement.removeAttribute("data-kit");
+  });
+
   it("renders one entry per catalog achievement, earned and locked distinguished", () => {
     const profile = makeProfile();
-    render(<HQConsole open profile={profile} onClose={vi.fn()} />);
+    render(
+      <ThemeProvider>
+        <HQConsole open profile={profile} onClose={vi.fn()} />
+      </ThemeProvider>
+    );
 
     for (const ach of ACHIEVEMENTS) {
       const name = screen.getByText(ach.name);
@@ -49,7 +60,11 @@ describe("HQConsole achievements grid", () => {
   });
 
   it("renders nothing when closed", () => {
-    render(<HQConsole open={false} profile={makeProfile()} onClose={vi.fn()} />);
+    render(
+      <ThemeProvider>
+        <HQConsole open={false} profile={makeProfile()} onClose={vi.fn()} />
+      </ThemeProvider>
+    );
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

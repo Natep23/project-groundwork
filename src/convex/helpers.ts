@@ -171,7 +171,14 @@ const ACHIEVEMENTS: Record<string, { reward: number; theme?: string }> = {
     five_in_day: { reward: 40 },
     portfolio_5: { reward: 30 },
     finisher_10: { reward: 100 },
+    // 0 xp: this achievement is itself the gate for remix mode, and giving it
+    // 0 xp avoids a second computeLevel recompute after the level-gated theme
+    // unlocks below (see the ordering note in applyEngagement).
+    remix_unlocked: { reward: 0 },
 };
+
+/** The three unlockable (non-free) themes; remix mode requires all three. */
+const REMIX_THEMES = ["arc-reactor", "command", "phosphor"];
 
 /**
  * The single mutation path that owns the engagement engine: get-or-creates
@@ -284,6 +291,25 @@ export async function applyEngagement(
     if (newLevel >= 3) unlockedThemes.add("arc-reactor");
     if (newLevel >= 5) unlockedThemes.add("command");
     if (newLevel >= 7) unlockedThemes.add("phosphor");
+
+    // Evaluated AFTER the level-gated unlocks above (not with the other
+    // achievement candidates, which run before computeLevel): the third
+    // theme can unlock via a level-up in this very call, so checking here
+    // is the only way to catch that same-call transition. Reward is 0 xp,
+    // so no second level recompute is needed.
+    if (
+        !achievements.has("remix_unlocked") &&
+        REMIX_THEMES.every((theme) => unlockedThemes.has(theme))
+    ) {
+        achievements.add("remix_unlocked");
+        await ctx.db.insert("Events", {
+            userId,
+            type: "achievement",
+            ts,
+            dayKey,
+            meta: { label: "remix_unlocked" },
+        });
+    }
 
     await ctx.db.patch(profile._id, {
         xp,

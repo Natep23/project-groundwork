@@ -1,6 +1,6 @@
 import React from "react";
 import type { CelebrationEvent } from "./engagement";
-import { useTheme } from "./theme";
+import { useThemeKit } from "./themeKit";
 
 /**
  * Theming seam for workstream 06 (themes & motion): lets a theme skin the
@@ -128,12 +128,14 @@ const THEME_VISUALS: Record<string, Partial<EngagementVisuals>> = {
 };
 
 /**
- * Reads the active theme and feeds the matching overrides into
+ * Reads the active kit (p3-03: `useThemeKit()`, not the raw theme — so a
+ * remixed kit, once p3-05 ships, still gets its own celebration visuals
+ * even under a different palette) and feeds the matching overrides into
  * `EngagementVisualsProvider`. Mount once, inside `ThemeProvider` and above
  * `EngagementCelebrations` (see `App.tsx`).
  */
 export function ThemedEngagementVisuals({ children }: { children: React.ReactNode }) {
-  const { theme } = useTheme();
-  const overrides = THEME_VISUALS[theme] ?? {};
+  const kit = useThemeKit();
+  const overrides = THEME_VISUALS[kit] ?? {};
   return <EngagementVisualsProvider value={overrides}>{children}</EngagementVisualsProvider>;
 }

@@ -3,33 +3,34 @@ import { Authenticated, useConvexAuth, useQuery } from "convex/react";
 import { UserButton } from "@clerk/clerk-react";
 import { Link, useLocation } from "react-router-dom";
 import { api } from "../convex/_generated/api";
-import { THEMES, useTheme, ThemeId, FREE_THEME_IDS, DEFAULT_THEME } from "../lib/theme";
-import { THEME_UNLOCKS } from "../lib/engagement";
+import { useTheme, FREE_THEME_IDS, DEFAULT_THEME } from "../lib/theme";
+import { canRemix } from "../lib/engagement";
 import { HQConsole } from "./HQConsole";
+import { ThemeGallery, PreviewBanner } from "./ThemeGallery";
 import { FlameIcon } from "./icons";
-
-const UNLOCK_CONDITION: Record<string, string> = Object.fromEntries(
-  THEME_UNLOCKS.map((t) => [t.id, t.condition])
-);
 
 /**
  * Gates theme *selection* only: `free ∪ profile.unlockedThemes` is
- * selectable, everything else renders as a disabled option with its unlock
- * condition. Signed-out visitors (no profile) only ever see the free set as
- * selectable. If the currently-applied theme somehow isn't in that
- * selectable set (e.g. tampered localStorage, or the pre-paint script
+ * selectable, everything else can only be trialed via the gallery's
+ * session-only preview. Signed-out visitors (no profile) only ever see the
+ * free set as selectable. If the currently-*selected* theme somehow isn't in
+ * that selectable set (e.g. tampered localStorage, or the pre-paint script
  * applying a stale value), fall back to the default free theme rather than
- * leaving an ungated, unselectable theme painted on screen.
+ * leaving an ungated, unselectable theme painted on screen. This gates only
+ * on the persisted `theme`, never `appliedPalette`/`appliedKit` — so
+ * previewing or remixing a locked theme never trips the reset. It also
+ * re-validates a persisted remix loadout against the profile (see below).
  */
 function useThemeGate() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const profile = useQuery(api.Profile.getProfile, isAuthenticated ? {} : "skip");
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, remix, setRemix } = useTheme();
 
   const unlocked = React.useMemo(
     () => new Set<string>([...FREE_THEME_IDS, ...(profile?.unlockedThemes ?? [])]),
     [profile]
   );
+  const remixAllowed = profile ? canRemix(profile) : false;
 
   // Only decide once auth has resolved and (if signed in) the profile has
   // loaded. Otherwise the loading window looks unauthenticated, and the effect
@@ -39,7 +40,20 @@ function useThemeGate() {
   React.useEffect(() => {
     if (!ready) return;
     if (!unlocked.has(theme)) setTheme(DEFAULT_THEME);
-  }, [ready, unlocked, theme, setTheme]);
+    // A remix loadout persisted in localStorage is server-untrusted, so
+    // re-validate it once the profile is known: if remix isn't earned or the
+    // palette is no longer unlocked, drop back to the plain theme; if only the
+    // kit is locked, degrade it silently to the palette's own kit (Fable
+    // issue #6). The pre-paint script only ever applied the palette, so this
+    // correction touches the post-hydration kit without a paint flash.
+    if (remix) {
+      if (!remixAllowed || !unlocked.has(remix.palette)) {
+        setRemix(null);
+      } else if (!unlocked.has(remix.kit)) {
+        setRemix({ palette: remix.palette, kit: remix.palette });
+      }
+    }
+  }, [ready, unlocked, theme, setTheme, remix, remixAllowed, setRemix]);
 
   return unlocked;
 }
@@ -80,9 +94,9 @@ function HQCell() {
 }
 
 export const Header = () => {
-  const { theme, setTheme } = useTheme();
-  const unlocked = useThemeGate();
+  useThemeGate();
   const { pathname } = useLocation();
+  const [galleryOpen, setGalleryOpen] = React.useState(false);
   const today = new Date().toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
@@ -90,48 +104,43 @@ export const Header = () => {
   });
 
   return (
-    <header className="titleblock">
-      <div className="titleblock__cell">
-        <span className="eyebrow">Project</span>
-        <Link to="/" className="wordmark">
-          Ground<span>Work</span>
-        </Link>
-      </div>
-      <div className="titleblock__cell titleblock__cell--sheet">
-        <span className="eyebrow">Sheet</span>
-        <span className="titleblock__value">{sheetLabel(pathname)}</span>
-      </div>
-      <div className="titleblock__cell titleblock__cell--date">
-        <span className="eyebrow">Date</span>
-        <span className="titleblock__value">{today}</span>
-      </div>
-      <div className="titleblock__cell titleblock__cell--grow" aria-hidden="true" />
-      <div className="titleblock__cell">
-        <label className="eyebrow" htmlFor="theme-select">
-          Print
-        </label>
-        <select
-          id="theme-select"
-          className="theme-select"
-          value={theme}
-          onChange={(e) => setTheme(e.target.value as ThemeId)}
-        >
-          {THEMES.map((t) => {
-            const isUnlocked = unlocked.has(t.id);
-            return (
-              <option key={t.id} value={t.id} disabled={!isUnlocked}>
-                {isUnlocked ? t.label : `🔒 ${t.label} — ${UNLOCK_CONDITION[t.id]}`}
-              </option>
-            );
-          })}
-        </select>
-      </div>
-      <Authenticated>
-        <HQCell />
-        <div className="titleblock__cell titleblock__cell--end">
-          <UserButton />
+    <>
+      <header className="titleblock">
+        <div className="titleblock__cell">
+          <span className="eyebrow">Project</span>
+          <Link to="/" className="wordmark">
+            Ground<span>Work</span>
+          </Link>
         </div>
-      </Authenticated>
-    </header>
+        <div className="titleblock__cell titleblock__cell--sheet">
+          <span className="eyebrow">Sheet</span>
+          <span className="titleblock__value">{sheetLabel(pathname)}</span>
+        </div>
+        <div className="titleblock__cell titleblock__cell--date">
+          <span className="eyebrow">Date</span>
+          <span className="titleblock__value">{today}</span>
+        </div>
+        <div className="titleblock__cell titleblock__cell--grow" aria-hidden="true" />
+        <div className="titleblock__cell">
+          <span className="eyebrow">Print</span>
+          <button
+            type="button"
+            className="btn theme-gallery-btn"
+            onClick={() => setGalleryOpen(true)}
+            aria-haspopup="dialog"
+          >
+            Themes
+          </button>
+        </div>
+        <Authenticated>
+          <HQCell />
+          <div className="titleblock__cell titleblock__cell--end">
+            <UserButton />
+          </div>
+        </Authenticated>
+      </header>
+      <PreviewBanner />
+      <ThemeGallery open={galleryOpen} onClose={() => setGalleryOpen(false)} />
+    </>
   );
 };

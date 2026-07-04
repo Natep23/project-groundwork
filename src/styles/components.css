@@ -70,15 +70,9 @@
   white-space: nowrap;
 }
 
-.theme-select {
-  font-family: var(--font-mono);
+.theme-gallery-btn {
   font-size: 12px;
-  background: var(--surface);
-  color: var(--ink);
-  border: var(--border-w) solid var(--line-strong);
-  border-radius: var(--radius);
-  padding: 4px 6px;
-  cursor: pointer;
+  padding: 4px 10px;
 }
 
 @media (max-width: 760px) {
@@ -1078,6 +1072,206 @@
   margin-top: var(--space-4);
 }
 
+/* ======================= Theme gallery + preview ======================= */
+
+/* The gallery grid needs more room than the default 440px dialog. */
+.modal:has(.theme-gallery) {
+  max-width: 720px;
+  max-height: 82vh;
+  overflow-y: auto;
+}
+
+/* Remix loadout (p3-05): shown at the top of the gallery only once
+   `canRemix` is earned. Pairs any unlocked palette with any unlocked kit. */
+.loadout {
+  border: var(--border-w) solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.loadout__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.loadout__hint {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--ink-muted);
+}
+
+.loadout__controls {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.loadout__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.loadout__select {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 6px 10px;
+  background: var(--surface);
+  color: var(--ink);
+  border: var(--border-w) solid var(--line-strong);
+  border-radius: var(--radius);
+}
+
+.loadout__cross {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--accent);
+  padding-bottom: 8px;
+}
+
+.loadout__reset {
+  align-self: flex-start;
+  font-size: 12px;
+}
+
+.theme-gallery {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.theme-tile {
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-2);
+}
+
+.theme-tile--selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.theme-tile--previewing {
+  border-color: var(--accent);
+  border-style: dashed;
+}
+
+.theme-tile__preview {
+  /* Re-scopes tokens for this theme regardless of the app's active theme —
+   * a nested `data-theme` container renders that theme's real CSS vars. */
+  background: var(--bg);
+  color: var(--ink);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-bottom: var(--border-w) solid var(--line);
+}
+
+.theme-tile__mock-card {
+  background: var(--surface);
+  border: var(--border-w) solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.theme-tile__mock-title {
+  font-family: var(--font-display);
+  font-weight: 660;
+  font-size: 13px;
+}
+
+.theme-tile__mock-btn {
+  align-self: flex-start;
+  font-size: 11px;
+  padding: 6px 10px;
+  pointer-events: none;
+}
+
+.theme-tile__swatches {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.theme-tile__swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: var(--border-w) solid var(--line);
+}
+
+.theme-tile__meta {
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.theme-tile__label {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.theme-tile__lock {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink-muted);
+}
+
+.theme-tile__condition {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.preview-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent-soft);
+  border-bottom: var(--border-w) solid var(--accent);
+  font-size: 13px;
+}
+
+.preview-banner__exit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
 /* ============================= Toasts ============================= */
 
 .toast-stack {
@@ -1614,22 +1808,60 @@
   font-size: 22px;
 }
 
+.celebration--arc-reactor,
+.celebration--command,
+.celebration--phosphor {
+  position: relative;
+}
+
+/* ---- Arc reactor: a single ring-burst pulse (p3-04) ---- */
 @media (prefers-reduced-motion: no-preference) {
-  .celebration--arc-reactor,
-  .celebration--phosphor {
-    position: relative;
-    overflow: hidden;
+  .celebration--arc-reactor::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: 0 0 0 0 var(--accent);
+    animation: ring-burst 700ms ease-out 1;
   }
 
-  .celebration--arc-reactor::before,
-  .celebration--phosphor::before {
+  @keyframes ring-burst {
+    0% {
+      box-shadow: 0 0 0 0 var(--accent);
+      opacity: 1;
+    }
+    100% {
+      box-shadow: 0 0 0 14px transparent;
+      opacity: 0;
+    }
+  }
+}
+
+/* ---- Command: a stamped commendation with one scan-line wipe (p3-04) ---- */
+.celebration--command::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px dashed var(--accent);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .celebration--command {
+    overflow: hidden;
+    animation: celebration-in 220ms ease-out, celebration-flash 420ms ease-out 220ms;
+  }
+
+  .celebration--command::before {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
     background: linear-gradient(120deg, transparent 40%, var(--accent-soft) 50%, transparent 60%);
     background-size: 250% 100%;
-    animation: celebration-sweep 1.8s ease-in-out 1;
+    animation: celebration-sweep 900ms ease-in-out 1;
   }
 
   @keyframes celebration-sweep {
@@ -1641,16 +1873,44 @@
     }
   }
 
-  .celebration--command {
-    animation: celebration-in 220ms ease-out, celebration-flash 420ms ease-out 220ms;
-  }
-
   @keyframes celebration-flash {
     0% {
       box-shadow: 0 0 0 2px var(--accent), var(--shadow-2);
     }
     100% {
       box-shadow: var(--shadow-2);
+    }
+  }
+}
+
+/* ---- Phosphor: a single, slow CRT roll/glitch (p3-04) ---- */
+/* WCAG 2.3.1: one non-repeating 1s transition with small brightness deltas —
+   not a periodic strobe, so it stays far under the 3-flashes/sec ceiling. */
+@media (prefers-reduced-motion: no-preference) {
+  .celebration--phosphor {
+    animation: celebration-in 220ms ease-out, crt-roll 1s ease-in-out 1;
+  }
+
+  @keyframes crt-roll {
+    0% {
+      transform: translateY(0);
+      filter: brightness(1);
+    }
+    25% {
+      transform: translateY(-2px);
+      filter: brightness(1.06);
+    }
+    50% {
+      transform: translateY(1px);
+      filter: brightness(0.95);
+    }
+    75% {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+    100% {
+      transform: translateY(0);
+      filter: brightness(1);
     }
   }
 }
@@ -1871,6 +2131,300 @@
   }
 }
 
+/* Kit-aware boot variants (p3-03). BootSequence must not depend on
+   `useTheme`/`useThemeKit` (it mounts before ThemeProvider exists in the
+   pre-Clerk-key bootstrap — see the component's doc comment), so these are
+   driven purely by `[data-theme=…]`: `index.html`'s pre-paint script sets
+   it before first paint, and kit===theme for every user today. Cosmetic
+   only; each still collapses to nothing extra under reduced motion. */
+
+/* Arc reactor: a small reactor ring "spins up" next to the eyebrow. */
+[data-theme="arc-reactor"] .boot__eyebrow {
+  position: relative;
+  padding-left: 18px;
+}
+
+[data-theme="arc-reactor"] .boot__eyebrow::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin-top: -6px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--accent);
+  border-right-color: var(--accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-theme="arc-reactor"] .boot__eyebrow::before {
+    animation: loader-spin 1.1s linear infinite;
+  }
+}
+
+/* Command: a "systems online" sweep underlining the status line. */
+[data-theme="command"] .boot__status {
+  position: relative;
+}
+
+[data-theme="command"] .boot__status::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  height: 1px;
+  width: 100%;
+  background: var(--accent);
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-theme="command"] .boot__status::after {
+    animation: boot-status-sweep 1.6s ease-in-out infinite;
+  }
+
+  @keyframes boot-status-sweep {
+    0% {
+      transform: scaleX(0);
+      opacity: 0.8;
+    }
+    60% {
+      transform: scaleX(1);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scaleX(1);
+      opacity: 0;
+    }
+  }
+}
+
+/* Phosphor: a CRT power-on flash on the frame itself. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-theme="phosphor"] .boot__frame {
+    animation: boot-crt-on 380ms ease-out;
+  }
+
+  @keyframes boot-crt-on {
+    0% {
+      filter: brightness(2.2);
+      opacity: 0;
+    }
+    40% {
+      opacity: 1;
+    }
+    100% {
+      filter: brightness(1);
+      opacity: 1;
+    }
+  }
+}
+
+/* ============================= Loader (component-kit, p3-03) ============================= */
+/* `<Loader>` (`components/Loader.tsx`). The default kit (free themes) is
+   deliberately unstyled beyond what already existed — call sites pass their
+   existing class (`app-loading`, `hq__loading`, `.mono`) via `className`, so
+   `.loader`/`.loader--default` add no visual rule and free-theme rendering
+   is unchanged from before p3-03. Bespoke kits layer a signature glyph. */
+
+/* Layout only for the bespoke kits (glyph beside label). The default variant
+   is a bare label, so `.loader`/`.loader--default` add NO display rule — the
+   call site's own class governs it (e.g. `.app-loading`'s full-page grid
+   centering, or an inline `.hq__loading` <p>), keeping free-theme rendering
+   byte-identical to before p3-03. */
+.loader--arc-reactor,
+.loader--command,
+.loader--phosphor {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Full-page loaders (`<Loader as="div" className="app-loading">`) stay grid-
+   centered even under a bespoke kit — this two-class selector outranks the
+   single-class `.loader--*` inline-flex above so the board/card loading screen
+   is dead-centered on every theme. */
+.app-loading.loader {
+  display: grid;
+}
+
+.loader__glyph {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---- Arc reactor: concentric counter-rotating rings + pulsing core ---- */
+.loader--arc-reactor .loader__glyph--arc-reactor {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.loader__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+}
+
+.loader__ring--outer {
+  border-top-color: var(--accent);
+  border-right-color: var(--accent);
+}
+
+.loader__ring--inner {
+  inset: 5px;
+  border-bottom-color: var(--accent-soft);
+  border-left-color: var(--accent-soft);
+}
+
+.loader__core {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loader--arc-reactor .loader__ring--outer {
+    animation: loader-spin 1.1s linear infinite;
+  }
+
+  .loader--arc-reactor .loader__ring--inner {
+    animation: loader-spin-reverse 1.6s linear infinite;
+  }
+
+  .loader--arc-reactor .loader__core {
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loader-spin-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+/* ---- Command: a contained radar sweep ---- */
+.loader--command .loader__glyph--command {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+
+.loader__radar-sweep {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from 0deg, var(--accent) 0deg, transparent 60deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loader__radar-sweep {
+    animation: loader-spin 1.4s linear infinite;
+  }
+}
+
+/* ---- Phosphor: a blinking cursor after the label ("LOADING▊") ---- */
+.loader--phosphor .loader__glyph--phosphor {
+  font-family: var(--font-mono);
+  color: var(--accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loader--phosphor .loader__glyph--phosphor {
+    animation: loader-blink 1s steps(1, end) infinite;
+  }
+}
+
+@keyframes loader-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ============================= Progress (component-kit, p3-03) ============================= */
+/* `<Progress>` (`components/Progress.tsx`). The default kit reuses the
+   caller's existing track/fill classes (`kcard__progress-track`/`-fill`,
+   `briefing__xp-track`/`-fill`) unchanged — `.progress`/`.progress--default`
+   add no visual rule of their own. Bespoke kits render their own visual and
+   ignore those classes. */
+
+.progress--arc-reactor {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.progress__dial {
+  width: 22px;
+  height: 22px;
+  transform: rotate(-90deg);
+}
+
+.progress__dial-track {
+  fill: none;
+  stroke: var(--surface-2);
+  stroke-width: 3;
+}
+
+.progress__dial-fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .progress__dial-fill {
+    transition: stroke-dashoffset 260ms ease-out;
+  }
+}
+
+.progress__value {
+  font-size: 10.5px;
+  color: var(--ink-muted);
+}
+
+/* ---- Command: a segmented gauge ---- */
+.progress--command {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.progress__segment {
+  width: 5px;
+  height: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+
+.progress__segment--on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---- Phosphor: an ASCII bar ---- */
+.progress--phosphor {
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+
 /* ============================= Column entrance ============================= */
 
 @media (prefers-reduced-motion: no-preference) {
@@ -1915,11 +2469,16 @@
    fixed, pointer-events: none, negative z-index (behind all normal-flow UI,
    visible in the grid gutters around cards/panels) — pure atmosphere, no
    layout or interaction impact. All motion gated behind reduced-motion;
-   the static background pattern still applies either way. */
+   the static background pattern still applies either way.
 
-[data-theme="arc-reactor"] body::before,
-[data-theme="command"] body::before,
-[data-theme="phosphor"] body::before {
+   Keyed on `[data-kit=…]`, not `[data-theme=…]` (p3-03 / Fable issue #1):
+   this overlay is a component-kit behavior, so a remixed combo (p3-05) —
+   e.g. Command palette + Arc-reactor kit — shows the *kit's* overlay, not
+   the palette's. Palette-driven token CSS stays scoped to `[data-theme]`. */
+
+[data-kit="arc-reactor"] body::before,
+[data-kit="command"] body::before,
+[data-kit="phosphor"] body::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -1928,14 +2487,14 @@
 }
 
 /* Arc reactor: a faint reticle vignette with a slow vertical scan. */
-[data-theme="arc-reactor"] body::before {
+[data-kit="arc-reactor"] body::before {
   background: radial-gradient(circle at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.4) 100%),
     repeating-linear-gradient(0deg, var(--grid-line-major) 0 1px, transparent 1px 4px);
   opacity: 0.5;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  [data-theme="arc-reactor"] body::before {
+  [data-kit="arc-reactor"] body::before {
     animation: hud-pulse 5s ease-in-out infinite;
   }
 
@@ -1951,7 +2510,7 @@
 }
 
 /* Command: a rotating radar-grid sweep. */
-[data-theme="command"] body::before {
+[data-kit="command"] body::before {
   background: repeating-conic-gradient(
     from 0deg,
     var(--grid-line-major) 0deg 0.5deg,
@@ -1961,7 +2520,7 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  [data-theme="command"] body::before {
+  [data-kit="command"] body::before {
     animation: radar-spin 9s linear infinite;
   }
 
@@ -1973,13 +2532,13 @@
 }
 
 /* Phosphor: CRT scanlines with a subtle flicker. */
-[data-theme="phosphor"] body::before {
+[data-kit="phosphor"] body::before {
   background: repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 3px);
   opacity: 0.6;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  [data-theme="phosphor"] body::before {
+  [data-kit="phosphor"] body::before {
     animation: phosphor-flicker 6s ease-in-out infinite;
   }
 
@@ -1994,6 +2553,213 @@
     }
     97% {
       opacity: 0.68;
+    }
+  }
+}
+
+/* ============================= Signature set-pieces (p3-04) ============================= */
+/* Bespoke, theme-native "surprises" for the three unlockable kits. Every
+   rule below is scoped to `[data-kit="…"]` — never a bare selector — so the
+   four free themes are visually unchanged (Fable issue #5). All motion sits
+   behind `prefers-reduced-motion: no-preference` with a static fallback;
+   decorative layers are pseudo-elements (never in the accessibility tree)
+   or explicitly `aria-hidden` + `pointer-events: none`. */
+
+/* ---- Arc reactor: static HUD corner brackets on cards/HQ sections ---- */
+/* Pure CSS corner-bracket trick: 8 small linear-gradient layers, one pair
+   (horizontal + vertical tick) per corner. Static — no mouse tracking, the
+   hover reticle is cut per D2. */
+[data-kit="arc-reactor"] .kcard::after,
+[data-kit="arc-reactor"] .hq__section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to right, var(--accent) 0 8px, transparent 8px) 0 0 / 8px 2px no-repeat,
+    linear-gradient(to bottom, var(--accent) 0 8px, transparent 8px) 0 0 / 2px 8px no-repeat,
+    linear-gradient(to left, var(--accent) 0 8px, transparent 8px) 100% 0 / 8px 2px no-repeat,
+    linear-gradient(to bottom, var(--accent) 0 8px, transparent 8px) 100% 0 / 2px 8px no-repeat,
+    linear-gradient(to right, var(--accent) 0 8px, transparent 8px) 0 100% / 8px 2px no-repeat,
+    linear-gradient(to top, var(--accent) 0 8px, transparent 8px) 0 100% / 2px 8px no-repeat,
+    linear-gradient(to left, var(--accent) 0 8px, transparent 8px) 100% 100% / 8px 2px no-repeat,
+    linear-gradient(to top, var(--accent) 0 8px, transparent 8px) 100% 100% / 2px 8px no-repeat;
+  opacity: 0.85;
+}
+
+[data-kit="arc-reactor"] .hq__section {
+  position: relative;
+}
+
+/* ---- Arc reactor: "ARC REACTOR — nn%" label beside the HQ dial ---- */
+.hq__reactor-label {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* ---- Command: HQ backdrop — an animated topographic contour map ---- */
+/* A single pre-authored SVG contour tile (fixed paths, never regenerated),
+   drifted with `transform: translate` only. Reduced-motion keeps the tile
+   static. Decorative: negative z-index within `.hq`'s own stacking context,
+   `pointer-events: none`; a pseudo-element, so it's never in the a11y tree. */
+[data-kit="command"] .hq {
+  position: relative;
+  isolation: isolate;
+}
+
+[data-kit="command"] .hq::before {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%238a9468' stroke-width='1.2'%3E%3Cpath d='M20,100 C20,60 60,20 100,20 C140,20 180,60 180,100 C180,140 140,180 100,180 C60,180 20,140 20,100 Z'/%3E%3Cpath d='M40,100 C40,72 68,44 100,44 C132,44 160,72 160,100 C160,128 132,156 100,156 C68,156 40,128 40,100 Z'/%3E%3Cpath d='M60,100 C60,84 76,68 100,68 C124,68 140,84 140,100 C140,116 124,132 100,132 C76,132 60,116 60,100 Z'/%3E%3Cpath d='M150,20 C170,30 185,45 190,60' stroke-width='1'/%3E%3Cpath d='M10,150 C20,165 35,178 55,185' stroke-width='1'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  background-repeat: repeat;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-kit="command"] .hq::before {
+    animation: topo-drift 60s linear infinite;
+  }
+
+  @keyframes topo-drift {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-200px, -200px, 0);
+    }
+  }
+}
+
+/* ---- Command: heatmap as a recon overlay, velocity as a sortie chart ---- */
+[data-kit="command"] .hq__heatmap-cell {
+  border-radius: 0;
+  border: 1px solid var(--line);
+}
+
+[data-kit="command"] .hq__heatmap-cell--4 {
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+[data-kit="command"] .hq__velocity-bar {
+  border-radius: 0;
+}
+
+[data-kit="command"] .hq__velocity-total {
+  color: var(--accent);
+}
+
+/* ---- Phosphor: HQ reframed as a CRT terminal window ---- */
+[data-kit="phosphor"] .hq {
+  position: relative;
+  font-family: var(--font-mono);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+
+/* Scanline overlay: decorative pseudo-element, pointer-events: none. */
+[data-kit="phosphor"] .hq::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  background: repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply;
+}
+
+/* Blinking terminal cursor accent. */
+[data-kit="phosphor"] .hq::after {
+  content: "▊";
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-3);
+  z-index: 1;
+  color: var(--accent);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-kit="phosphor"] .hq::after {
+    animation: loader-blink 1s steps(1, end) infinite;
+  }
+
+  /* A single power-on flash when the console opens (mount-triggered, runs
+     once — not a repeating strobe, so WCAG 2.3.1's flash-rate ceiling never
+     applies). Small brightness delta, ~0.7s. */
+  [data-kit="phosphor"] .hq {
+    animation: crt-power-on 700ms ease-out;
+  }
+
+  @keyframes crt-power-on {
+    0% {
+      filter: brightness(1.6) contrast(1.15);
+      opacity: 0.3;
+    }
+    40% {
+      filter: brightness(0.92);
+      opacity: 1;
+    }
+    100% {
+      filter: brightness(1);
+      opacity: 1;
+    }
+  }
+}
+
+/* ---- Phosphor: typewriter reveal on section headings ---- */
+/* `components/Typewriter.tsx`'s `<SectionHeading>` renders the real text at
+   all times (kept in the a11y tree via `opacity`, never `display`/
+   `visibility`) plus this aria-hidden overlay, which is the only thing that
+   actually animates. Non-phosphor kits / reduced motion never render the
+   overlay markup at all — plain heading, byte-identical to pre-p3-04. */
+[data-kit="phosphor"] .typewriter {
+  position: relative;
+  display: inline-block;
+}
+
+[data-kit="phosphor"] .typewriter__text {
+  opacity: 0;
+}
+
+[data-kit="phosphor"] .typewriter__overlay {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+}
+
+[data-kit="phosphor"] .typewriter__overlay::after {
+  content: "▊";
+  position: absolute;
+  right: 0;
+  top: 0;
+  color: var(--accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-kit="phosphor"] .typewriter__overlay {
+    animation: typewriter-reveal 900ms linear forwards;
+  }
+
+  [data-kit="phosphor"] .typewriter__overlay::after {
+    animation: loader-blink 1s steps(1, end) infinite;
+  }
+
+  @keyframes typewriter-reveal {
+    to {
+      width: 100%;
     }
   }
 }

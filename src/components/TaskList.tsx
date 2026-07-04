@@ -21,6 +21,7 @@ import { api } from "../convex/_generated/api";
 import { Doc, Id } from "../convex/_generated/dataModel";
 import { GripIcon, PlusIcon, TrashIcon } from "./icons";
 import { LinkList } from "./ResearchList";
+import { Loader } from "./Loader";
 import { useToast } from "../lib/toast";
 import { logger } from "../lib/logger";
 import { localDayKey } from "../lib/dayKey";
@@ -276,9 +277,7 @@ export function TaskList({ cardId }: { cardId: Id<"Cards"> }) {
       </div>
       <div className="panel__body">
         {tasks === undefined ? (
-          <span className="mono" style={{ color: "var(--ink-faint)" }}>
-            Loading…
-          </span>
+          <Loader className="mono" style={{ color: "var(--ink-faint)" }} label="Loading…" />
         ) : tasks.length === 0 ? (
           <div className="empty">
             <span className="empty__title">No tasks yet</span>

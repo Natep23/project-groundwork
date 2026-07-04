@@ -10,9 +10,13 @@
   </head>
   <body>
     <script>
-      // Apply the saved theme before first paint to avoid a flash of Daylight.
+      // Apply the saved PALETTE before first paint to avoid a flash of
+      // Daylight. Only the palette (`data-theme`) is pre-painted — the
+      // component kit (`data-kit`) is post-hydration, so a remix can't cause a
+      // paint flash (keep in sync with src/lib/theme.tsx). Fallback chain:
+      // remix palette key -> plain theme key -> media query.
       try {
-        var t = localStorage.getItem("groundwork-theme");
+        var t = localStorage.getItem("groundwork-palette") || localStorage.getItem("groundwork-theme");
         if (t === "dark") t = "graphite";
         if (t === "light") t = "daylight";
         if (!t && matchMedia("(prefers-color-scheme: dark)").matches) t = "graphite";

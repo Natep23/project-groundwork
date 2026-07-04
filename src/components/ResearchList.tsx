@@ -7,6 +7,7 @@ import obsidianLogo from "../assets/images/2023-Obsidian-logo.svg.png";
 import { LinkIcon, PlusIcon, TrashIcon } from "./icons";
 import { useToast } from "../lib/toast";
 import { logger } from "../lib/logger";
+import { Loader } from "./Loader";
 
 export function linkTitle(raw: string): string {
   try {
@@ -86,9 +87,7 @@ export function LinkList({ cardId, taskId, stopDragPropagation }: LinkListProps)
   return (
     <>
       {links === undefined ? (
-        <span className="mono" style={{ color: "var(--ink-faint)" }}>
-          Loading…
-        </span>
+        <Loader className="mono" style={{ color: "var(--ink-faint)" }} label="Loading…" />
       ) : links.length === 0 ? (
         <div className="empty">
           <span className="empty__title">No research yet</span>

@@ -1,8 +1,19 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { BriefingBar } from "../../components/BriefingBar";
+import { BriefingBar, type BriefingBarProps } from "../../components/BriefingBar";
+import { ThemeProvider } from "../../lib/theme";
 import type { Profile } from "../../lib/engagement";
 import type { BoardCard } from "../../components/card";
+
+// BriefingBar's XP bar renders <Progress>, which reads the active kit via
+// `useThemeKit()` — that needs a `ThemeProvider` ancestor (see themeKit.tsx).
+function renderBriefingBar(props: BriefingBarProps) {
+  return render(
+    <ThemeProvider>
+      <BriefingBar {...props} />
+    </ThemeProvider>
+  );
+}
 
 function makeProfile(overrides: Partial<Profile> = {}): Profile {
   return {
@@ -41,7 +52,7 @@ function makeCard(overrides: Partial<BoardCard>): BoardCard {
 
 describe("BriefingBar", () => {
   it("reads as an invitation on a brand-new, level-1, no-history profile", () => {
-    render(<BriefingBar profile={makeProfile()} board={[]} onOpenHQ={vi.fn()} />);
+    renderBriefingBar({ profile: makeProfile(), board: [], onOpenHQ: vi.fn() });
     expect(screen.getByText(/standing by for your first card/i)).toBeInTheDocument();
     expect(screen.getByText(/no projects on the board yet/i)).toBeInTheDocument();
     expect(screen.getByText("Level 1")).toBeInTheDocument();
@@ -56,7 +67,7 @@ describe("BriefingBar", () => {
       makeCard({ _id: "c2" as BoardCard["_id"], phase: "In Progress", taskCount: 2, doneCount: 2 }),
       makeCard({ _id: "c3" as BoardCard["_id"], phase: "Completed", taskCount: 5, doneCount: 5 }),
     ];
-    render(<BriefingBar profile={profile} board={board} onOpenHQ={vi.fn()} />);
+    renderBriefingBar({ profile, board, onOpenHQ: vi.fn() });
 
     expect(screen.getByText("5 days")).toBeInTheDocument();
     expect(screen.getByText((_, el) => el?.textContent === "Level 3")).toBeInTheDocument();
@@ -68,7 +79,7 @@ describe("BriefingBar", () => {
   it("singularizes streak and counts at exactly one", () => {
     const profile = makeProfile({ currentStreak: 1 });
     const board = [makeCard({ phase: "Research", taskCount: 1, doneCount: 0 })];
-    render(<BriefingBar profile={profile} board={board} onOpenHQ={vi.fn()} />);
+    renderBriefingBar({ profile, board, onOpenHQ: vi.fn() });
     expect(screen.getByText("1 day")).toBeInTheDocument();
     expect(screen.getByText(/1 task needs attention/i)).toBeInTheDocument();
     expect(screen.getByText(/1 project active/i)).toBeInTheDocument();

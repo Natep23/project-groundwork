@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, act } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { ToastProvider } from "../../lib/toast";
+import { ThemeProvider } from "../../lib/theme";
 
 /* We mock dnd-kit so the DndContext just renders its children and hands us the
  * drag callbacks; then we drive onDragStart/onDragOver/onDragEnd directly and
@@ -71,9 +72,11 @@ const card = (id: string, phase: string, order: number): AnyCard => ({
 function renderBoard() {
   render(
     <MemoryRouter>
-      <ToastProvider>
-        <DashboardScreen />
-      </ToastProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          <DashboardScreen />
+        </ToastProvider>
+      </ThemeProvider>
     </MemoryRouter>
   );
 }

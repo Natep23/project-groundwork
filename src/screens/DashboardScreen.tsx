@@ -23,6 +23,7 @@ import { BoardColumn } from "../components/BoardColumn";
 import { BriefingBar } from "../components/BriefingBar";
 import { HQConsole } from "../components/HQConsole";
 import { PlusIcon, SearchIcon } from "../components/icons";
+import { Loader } from "../components/Loader";
 import { useToast } from "../lib/toast";
 import { logger } from "../lib/logger";
 import { localDayKey } from "../lib/dayKey";
@@ -192,11 +193,7 @@ export default function DashboardScreen() {
   };
 
   if (filtered === undefined) {
-    return (
-      <div className="app-loading" role="status">
-        <span>Loading the board…</span>
-      </div>
-    );
+    return <Loader as="div" className="app-loading" label="Loading the board…" />;
   }
 
   return (

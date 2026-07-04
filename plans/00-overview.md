@@ -1,7 +1,6 @@
 # GroundWork — Phase 2 Plan (Engagement & Depth)
 
-Status: **planning / not started.** Build only on the `begin` go-ahead, one workstream at a time.
-Advisor (Fable) tool is currently **unavailable**; mid-build review falls to the QA workstream + main-loop judgment.
+Status: **✅ SHIPPED** — commit `07fd598` on `Fable5_2026_Revamp`. All workstreams (02–07) complete, 122 tests green, Fable-signed-off. See `plans/README.md` for the index.
 
 ## Locked decisions (from planning Q&A)
 

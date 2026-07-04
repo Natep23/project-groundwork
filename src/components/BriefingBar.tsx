@@ -2,6 +2,7 @@ import type { Profile } from "../lib/engagement";
 import { levelProgress } from "../lib/engagement";
 import { FlameIcon } from "./icons";
 import type { BoardCard } from "./card";
+import { Progress } from "./Progress";
 
 function greeting(date: Date): string {
   const hour = date.getHours();
@@ -52,16 +53,13 @@ export function BriefingBar({ profile, board, onOpenHQ }: BriefingBarProps) {
 
         <button type="button" className="briefing__level" onClick={onOpenHQ}>
           <span className="briefing__level-label">Level {progress.level}</span>
-          <span
-            className="briefing__xp-track"
-            role="progressbar"
-            aria-valuenow={progress.pct}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={`${progress.xpIntoLevel} of ${progress.xpForNextLevel} XP to level ${progress.level + 1}`}
-          >
-            <span className="briefing__xp-fill" style={{ width: `${progress.pct}%` }} />
-          </span>
+          <Progress
+            value={progress.pct}
+            max={100}
+            label={`${progress.xpIntoLevel} of ${progress.xpForNextLevel} XP to level ${progress.level + 1}`}
+            trackClassName="briefing__xp-track"
+            fillClassName="briefing__xp-fill"
+          />
           <span className="briefing__xp-label mono">
             {progress.xpIntoLevel}/{progress.xpForNextLevel} XP
           </span>

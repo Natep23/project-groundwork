@@ -21,6 +21,7 @@ describe("ThemeProvider", () => {
   beforeEach(() => {
     localStorage.clear();
     document.documentElement.removeAttribute("data-theme");
+    document.documentElement.removeAttribute("data-kit");
   });
 
   it("defaults to daylight and applies data-theme to <html>", () => {
@@ -33,6 +34,15 @@ describe("ThemeProvider", () => {
     expect(document.documentElement.getAttribute("data-theme")).toBe("daylight");
   });
 
+  it("also sets data-kit to the theme id (p3-03: kit defaults to palette)", () => {
+    render(
+      <ThemeProvider>
+        <Probe />
+      </ThemeProvider>
+    );
+    expect(document.documentElement.getAttribute("data-kit")).toBe("daylight");
+  });
+
   it("switches theme and persists the choice", async () => {
     const user = userEvent.setup();
     render(
@@ -42,6 +52,7 @@ describe("ThemeProvider", () => {
     );
     await user.click(screen.getByRole("button", { name: "Blueprint" }));
     expect(document.documentElement.getAttribute("data-theme")).toBe("blueprint");
+    expect(document.documentElement.getAttribute("data-kit")).toBe("blueprint");
     expect(localStorage.getItem("groundwork-theme")).toBe("blueprint");
   });
 

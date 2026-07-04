@@ -95,7 +95,18 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: "five_in_day", name: "Productive", condition: "Complete 5 tasks in one day", reward: 40 },
   { id: "portfolio_5", name: "Portfolio", condition: "Create 5 projects", reward: 30 },
   { id: "finisher_10", name: "Finisher", condition: "Ship 10 projects", reward: 100 },
+  {
+    id: "remix_unlocked",
+    name: "Master Builder",
+    condition: "Unlock all three reward themes",
+    reward: 0,
+  },
 ];
+
+/** Derives remix-mode access from server-owned profile fields (no extra round-trip). */
+export function canRemix(profile: { achievements: string[] }): boolean {
+  return profile.achievements.includes("remix_unlocked");
+}
 
 export type ThemeUnlockDef = {
   id: string;

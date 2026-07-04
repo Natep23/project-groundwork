@@ -6,6 +6,7 @@ import { Doc, Id } from "../convex/_generated/dataModel";
 import type { Phase } from "../convex/schema";
 import { ArrowLeftIcon, ArrowRightIcon, GripIcon, TrashIcon } from "./icons";
 import { ConfirmDeleteModal } from "./Modals";
+import { Progress } from "./Progress";
 
 export type BoardCard = Doc<"Cards"> & {
   taskCount: number;
@@ -41,23 +42,26 @@ export function CardGhost({ card }: { card: BoardCard }) {
     <div className="kcard kcard--overlay" style={{ "--flag": card.color } as React.CSSProperties}>
       <CardBody card={card} />
       <div className="kcard__footer">
-        <Progress card={card} />
+        <CardProgress card={card} />
       </div>
     </div>
   );
 }
 
-function Progress({ card }: { card: BoardCard }) {
+function CardProgress({ card }: { card: BoardCard }) {
   if (card.taskCount === 0) {
     return <span className="kcard__progress">no tasks</span>;
   }
-  const pct = Math.round((card.doneCount / card.taskCount) * 100);
   return (
-    <span className="kcard__progress" aria-label={`${card.doneCount} of ${card.taskCount} tasks done`}>
+    <span className="kcard__progress">
       {card.doneCount}/{card.taskCount}
-      <span className="kcard__progress-track" aria-hidden="true">
-        <span className="kcard__progress-fill" style={{ width: `${pct}%` }} />
-      </span>
+      <Progress
+        value={card.doneCount}
+        max={card.taskCount}
+        label={`${card.doneCount} of ${card.taskCount} tasks done`}
+        trackClassName="kcard__progress-track"
+        fillClassName="kcard__progress-fill"
+      />
     </span>
   );
 }
@@ -126,7 +130,7 @@ export function Card({
         >
           <GripIcon />
         </button>
-        <Progress card={card} />
+        <CardProgress card={card} />
         <div className="kcard__actions">
           {prevPhase && (
             <button

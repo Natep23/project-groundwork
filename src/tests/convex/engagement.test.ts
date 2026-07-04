@@ -461,6 +461,124 @@ describe("profile bootstrap", () => {
     });
 });
 
+describe("remix_unlocked achievement", () => {
+    test("not granted with only 2 of 3 themes unlocked", async () => {
+        const { asA } = setup();
+        // first_ship unlocks arc-reactor; streak_7 unlocks phosphor. That's 2
+        // of 3 (missing "command", which requires level 5).
+        const cardId = await addCard(asA, "2026-01-01");
+        await asA.mutation(api.Cards.changePhase, {
+            id: cardId,
+            phase: "Completed",
+            dayKey: "2026-01-01",
+        });
+        const days = [
+            "2026-01-02",
+            "2026-01-03",
+            "2026-01-04",
+            "2026-01-05",
+            "2026-01-06",
+            "2026-01-07",
+        ];
+        for (const day of days) {
+            await asA.mutation(api.Profile.recordDailyVisit, { dayKey: day });
+        }
+        const profile = await asA.query(api.Profile.getProfile, {});
+        expect(profile.unlockedThemes).toContain("arc-reactor");
+        expect(profile.unlockedThemes).toContain("phosphor");
+        expect(profile.unlockedThemes).not.toContain("command");
+        expect(profile.achievements).not.toContain("remix_unlocked");
+    });
+
+    test("third theme unlocking via a level-up in the same mutation grants remix_unlocked in that call", async () => {
+        const { t, asA } = setup();
+        // Get arc-reactor and phosphor via level (3 and 7), leaving "command"
+        // (level 5) as the only missing theme. Land exactly at level 5 in a
+        // single applyEngagement call that also crosses level 3 and 7 is not
+        // possible in one monotonic jump without also hitting 5 first, so
+        // instead: get to level 6 (arc-reactor + command both present, but
+        // NOT phosphor), then a single xp grant that crosses level 7 should
+        // unlock phosphor -> all three present -> remix_unlocked granted in
+        // that same call.
+        await t.run(async (ctx) => {
+            await applyEngagement(ctx, "user_a", {
+                xpDelta: 1000, // level 6 (threshold 1000 for L6)
+                dayKey: "2026-01-01",
+                event: { type: "task_added" },
+            });
+        });
+        let profile = await asA.query(api.Profile.getProfile, {});
+        expect(profile.level).toBe(6);
+        expect(profile.unlockedThemes).toContain("arc-reactor");
+        expect(profile.unlockedThemes).toContain("command");
+        expect(profile.unlockedThemes).not.toContain("phosphor");
+        expect(profile.achievements).not.toContain("remix_unlocked");
+
+        // This single xp grant crosses the level-7 threshold (cumulative
+        // 1400), which unlocks phosphor -> all three themes now present ->
+        // remix_unlocked must be granted in this SAME mutation call.
+        await t.run(async (ctx) => {
+            await applyEngagement(ctx, "user_a", {
+                xpDelta: 400, // 1000 + 400 = 1400 -> level 7
+                dayKey: "2026-01-01",
+                event: { type: "task_added" },
+            });
+        });
+        profile = await asA.query(api.Profile.getProfile, {});
+        expect(profile.level).toBe(7);
+        expect(profile.unlockedThemes).toContain("phosphor");
+        expect(profile.achievements).toContain("remix_unlocked");
+
+        const activity = await asA.query(api.Profile.getActivity, { sinceDayKey: "2020-01-01" });
+        const remixEvents = activity.filter(
+            (e) => e.type === "achievement" && e.meta?.label === "remix_unlocked",
+        );
+        expect(remixEvents).toHaveLength(1);
+    });
+
+    test("granted on the triggering transition; not re-granted on a subsequent mutation", async () => {
+        const { t, asA } = setup();
+        await t.run(async (ctx) => {
+            await applyEngagement(ctx, "user_a", {
+                xpDelta: 1400, // level 7: arc-reactor, command, phosphor all unlock
+                dayKey: "2026-01-01",
+                event: { type: "task_added" },
+            });
+        });
+        let profile = await asA.query(api.Profile.getProfile, {});
+        expect(profile.level).toBe(7);
+        expect(profile.achievements.filter((a) => a === "remix_unlocked")).toHaveLength(1);
+
+        // A subsequent mutation must not re-grant it.
+        await t.run(async (ctx) => {
+            await applyEngagement(ctx, "user_a", {
+                xpDelta: 10,
+                dayKey: "2026-01-01",
+                event: { type: "task_added" },
+            });
+        });
+        profile = await asA.query(api.Profile.getProfile, {});
+        expect(profile.achievements.filter((a) => a === "remix_unlocked")).toHaveLength(1);
+    });
+
+    test("cross-user isolation: one user earning it does not grant it to another", async () => {
+        const { t, asA, asB } = setup();
+        await t.run(async (ctx) => {
+            await applyEngagement(ctx, "user_a", {
+                xpDelta: 1400,
+                dayKey: "2026-01-01",
+                event: { type: "task_added" },
+            });
+        });
+        const profileA = await asA.query(api.Profile.getProfile, {});
+        expect(profileA.achievements).toContain("remix_unlocked");
+
+        const profileB = await asB.query(api.Profile.getProfile, {});
+        expect(profileB.achievements).not.toContain("remix_unlocked");
+        expect(profileB.unlockedThemes).not.toContain("arc-reactor");
+    });
+});
+
 describe("cross-user isolation", () => {
     test("profiles, events, and achievements never leak across users", async () => {
         const { asA, asB } = setup();

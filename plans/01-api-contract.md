@@ -70,6 +70,7 @@ Counters (`totalTasksCompleted`, `totalProjectsShipped`) increment on the first-
 | `five_in_day` | Productive | 5 tasks completed in one dayKey | +40 xp |
 | `portfolio_5` | Portfolio | 5 projects created | +30 xp |
 | `finisher_10` | Finisher | 10 projects shipped | +100 xp |
+| `remix_unlocked` | Master Builder | all three unlockable themes present in `unlockedThemes` | +0 xp; gates remix mode |
 
 ## Theme unlock table
 
