@@ -53,8 +53,8 @@ describe("task completion XP anti-farm", () => {
 });
 
 describe("ship XP anti-farm", () => {
-    test("first ship awards +50 once; un-ship -> re-ship does not re-award; counter never decrements", async () => {
-        const { asA } = setup();
+    test("first ship awards +50 once; re-ship (via direct un-ship) does not re-award; counter never decrements", async () => {
+        const { t, asA } = setup();
         const cardId = await addCard(asA, "2026-01-01");
 
         await asA.mutation(api.Cards.changePhase, {
@@ -66,11 +66,12 @@ describe("ship XP anti-farm", () => {
         const xpAfterShip = profile.xp;
         expect(profile.totalProjectsShipped).toBe(1);
 
-        // Un-ship then re-ship.
-        await asA.mutation(api.Cards.changePhase, {
-            id: cardId,
-            phase: "Research",
-            dayKey: "2026-01-01",
+        // A Completed card is now a locked terminal state: the app itself
+        // can never un-ship it. To exercise the `everShipped` anti-farm
+        // guard directly, bypass the app layer via t.run (as if a card
+        // could somehow cycle back through Completed) and re-ship.
+        await t.run(async (ctx) => {
+            await ctx.db.patch(cardId, { phase: "Research" });
         });
         await asA.mutation(api.Cards.changePhase, {
             id: cardId,
@@ -81,6 +82,23 @@ describe("ship XP anti-farm", () => {
         profile = await asA.query(api.Profile.getProfile, {});
         expect(profile.xp).toBe(xpAfterShip);
         expect(profile.totalProjectsShipped).toBe(1);
+    });
+
+    test("a Completed card is locked: changePhase away from it throws", async () => {
+        const { asA } = setup();
+        const cardId = await addCard(asA, "2026-01-01");
+        await asA.mutation(api.Cards.changePhase, {
+            id: cardId,
+            phase: "Completed",
+            dayKey: "2026-01-01",
+        });
+        await expect(
+            asA.mutation(api.Cards.changePhase, {
+                id: cardId,
+                phase: "Research",
+                dayKey: "2026-01-01",
+            }),
+        ).rejects.toThrow("This project is completed and locked");
     });
 
     test("first_ship achievement fires once and unlocks arc-reactor", async () => {
@@ -97,7 +115,7 @@ describe("ship XP anti-farm", () => {
     });
 
     test("moveCard shares the same ship-award path (atomic phase + order)", async () => {
-        const { asA } = setup();
+        const { t, asA } = setup();
         const cardId = await addCard(asA, "2026-01-01");
         await asA.mutation(api.Cards.moveCard, {
             id: cardId,
@@ -111,8 +129,12 @@ describe("ship XP anti-farm", () => {
         const profile = await asA.query(api.Profile.getProfile, {});
         expect(profile.totalProjectsShipped).toBe(1);
 
-        // Re-shipping via moveCard again should not re-award.
-        await asA.mutation(api.Cards.changePhase, { id: cardId, phase: "Research" });
+        // A Completed card is locked, so re-shipping via the app is
+        // impossible; bypass via t.run to exercise the anti-farm guard on
+        // the shared moveCardWithShipAward path.
+        await t.run(async (ctx) => {
+            await ctx.db.patch(cardId, { phase: "Research" });
+        });
         await asA.mutation(api.Cards.moveCard, {
             id: cardId,
             toPhase: "Completed",

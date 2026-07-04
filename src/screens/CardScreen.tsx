@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
+import { ConvexError } from "convex/values";
 import { api } from "../convex/_generated/api";
 import type { Phase } from "../convex/schema";
 import { PHASES } from "../components/card";
@@ -18,6 +19,7 @@ export default function CardScreen() {
   // getCardById takes a plain string and resolves malformed ids to null,
   // so a bad URL lands on the not-found state instead of crashing the query.
   const card = useQuery(api.Cards.getCardById, { id: id ?? "" });
+  const tasks = useQuery(api.Tasks.getTasks, card ? { cardId: card._id } : "skip");
   const changePhase = useMutation(api.Cards.changePhase);
   const removeCard = useMutation(api.Cards.removeCard);
   const navigate = useNavigate();
@@ -25,6 +27,7 @@ export default function CardScreen() {
 
   const [editing, setEditing] = React.useState(false);
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
+  const [confirmingComplete, setConfirmingComplete] = React.useState(false);
 
   if (card === undefined) {
     return <Loader as="div" className="app-loading" label="Loading the card…" />;
@@ -46,14 +49,32 @@ export default function CardScreen() {
     );
   }
 
-  const handlePhaseChange = async (phase: Phase) => {
+  const locked = card.phase === "Completed";
+
+  const runPhaseChange = async (phase: Phase) => {
     try {
       await changePhase({ id: card._id, phase, dayKey: localDayKey() });
       toast(`Moved to ${phase}`);
     } catch (err) {
       logger.error("changePhase failed", err);
-      toastError("Couldn't move the card. Try again.");
+      const message = err instanceof ConvexError ? String(err.data) : undefined;
+      toastError(message ?? "Couldn't move the card. Try again.");
     }
+  };
+
+  const handlePhaseChange = async (phase: Phase) => {
+    if (phase === "Completed") {
+      // Tasks still loading: wait rather than show a misleading "unfinished
+      // tasks" message (the server gate is the real guard either way).
+      if (tasks === undefined) return;
+      if (!tasks.every((t) => t.done)) {
+        toastError("Complete or delete this project's unfinished tasks before finishing it.");
+        return;
+      }
+      setConfirmingComplete(true);
+      return;
+    }
+    await runPhaseChange(phase);
   };
 
   const handleDelete = async () => {
@@ -81,11 +102,15 @@ export default function CardScreen() {
 
       <div className="detail-head" style={{ "--flag": card.color } as React.CSSProperties}>
         <div className="detail-head__row">
-          <h1 className="detail-title">{card.title}</h1>
+          <h1 className={locked ? "detail-title detail-title--completed" : "detail-title"}>
+            {card.title}
+          </h1>
           <div className="detail-head__actions">
-            <button className="btn" onClick={() => setEditing(true)}>
-              <PencilIcon /> Edit
-            </button>
+            {!locked && (
+              <button className="btn" onClick={() => setEditing(true)}>
+                <PencilIcon /> Edit
+              </button>
+            )}
             <button className="btn btn--danger" onClick={() => setConfirmingDelete(true)}>
               <TrashIcon /> Delete
             </button>
@@ -98,6 +123,7 @@ export default function CardScreen() {
             <select
               className="theme-select"
               value={card.phase}
+              disabled={locked}
               onChange={(e) => void handlePhaseChange(e.target.value as Phase)}
             >
               {PHASES.map((p) => (
@@ -107,16 +133,33 @@ export default function CardScreen() {
               ))}
             </select>
           </label>
+          {locked && (
+            <span className="mono" style={{ color: "var(--ink-muted)" }}>
+              🔒 Completed &amp; locked
+            </span>
+          )}
           <span>Started {created}</span>
         </div>
       </div>
 
       <div className="detail-grid">
-        <TaskList cardId={card._id} />
+        <TaskList cardId={card._id} locked={locked} />
         <ResearchList cardId={card._id} />
       </div>
 
       <EditCardModal open={editing} card={card} onClose={() => setEditing(false)} />
+      <ConfirmDeleteModal
+        open={confirmingComplete}
+        title="Complete this project?"
+        body="Once completed, this project is locked — you won't be able to move it back or edit it (or its tasks), only delete it."
+        confirmLabel="Complete & lock"
+        tone="primary"
+        onConfirm={() => {
+          setConfirmingComplete(false);
+          void runPhaseChange("Completed");
+        }}
+        onClose={() => setConfirmingComplete(false)}
+      />
       <ConfirmDeleteModal
         open={confirmingDelete}
         title="Delete this card?"

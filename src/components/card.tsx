@@ -4,7 +4,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Doc, Id } from "../convex/_generated/dataModel";
 import type { Phase } from "../convex/schema";
-import { ArrowLeftIcon, ArrowRightIcon, GripIcon, TrashIcon } from "./icons";
+import { ArrowLeftIcon, ArrowRightIcon, GripIcon, LockIcon, TrashIcon } from "./icons";
 import { ConfirmDeleteModal } from "./Modals";
 import { Progress } from "./Progress";
 
@@ -74,15 +74,19 @@ export function Card({
 }: { card: BoardCard; dragDisabled?: boolean } & CardActions) {
   const navigate = useNavigate();
   const [confirming, setConfirming] = React.useState(false);
+  const isCompleted = card.phase === "Completed";
+  const noDrag = dragDisabled || isCompleted;
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card._id,
     data: { card, phase: card.phase },
-    disabled: dragDisabled,
+    disabled: noDrag,
   });
 
   const phaseIndex = PHASES.indexOf(card.phase);
-  const prevPhase = PHASES[phaseIndex - 1];
-  const nextPhase = PHASES[phaseIndex + 1];
+  // A completed card is a locked terminal state: no arrows in either
+  // direction (it can only be deleted, never moved).
+  const prevPhase = isCompleted ? undefined : PHASES[phaseIndex - 1];
+  const nextPhase = isCompleted ? undefined : PHASES[phaseIndex + 1];
 
   const open = () => navigate(`/card/${card._id}`);
 
@@ -96,7 +100,7 @@ export function Card({
   return (
     <div
       ref={setNodeRef}
-      className={isDragging ? "kcard kcard--dragging" : "kcard"}
+      className={`kcard${isDragging ? " kcard--dragging" : ""}${isCompleted ? " kcard--completed" : ""}`}
       style={
         {
           "--flag": card.color,
@@ -117,13 +121,18 @@ export function Card({
           {card.title}
         </button>
       </h3>
+      {isCompleted && (
+        <span className="kcard__lock" aria-label="Completed and locked">
+          <LockIcon /> Locked
+        </span>
+      )}
       {card.description && <p className="kcard__desc">{card.description}</p>}
       <div className="kcard__footer">
         <button
           className="icon-btn kcard__grip"
           aria-label={`Reorder card "${card.title}"`}
           title="Drag to reorder"
-          disabled={dragDisabled}
+          disabled={noDrag}
           {...attributes}
           {...listeners}
           onClick={(e) => e.stopPropagation()}

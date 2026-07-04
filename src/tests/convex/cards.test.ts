@@ -388,3 +388,164 @@ describe("changePhase and removeCard", () => {
         });
     });
 });
+
+describe("completion gate and lock", () => {
+    test("changePhase to Completed throws if any task is unfinished, succeeds once all are done", async () => {
+        const { asA } = setup();
+        const cardId = await asA.mutation(api.Cards.addCard, {
+            title: "c",
+            description: "",
+            phase: "In Progress",
+        });
+        const t1 = await asA.mutation(api.Tasks.addTask, {
+            cardId,
+            taskDescription: "one",
+            priority: 1,
+        });
+        await asA.mutation(api.Tasks.addTask, {
+            cardId,
+            taskDescription: "two",
+            priority: 1,
+        });
+
+        await expect(
+            asA.mutation(api.Cards.changePhase, { id: cardId, phase: "Completed" }),
+        ).rejects.toThrow("Complete or delete this project's unfinished tasks before finishing it.");
+
+        await asA.mutation(api.Tasks.setDone, { id: t1, done: true });
+        await expect(
+            asA.mutation(api.Cards.changePhase, { id: cardId, phase: "Completed" }),
+        ).rejects.toThrow("Complete or delete this project's unfinished tasks before finishing it.");
+
+        const tasks = await asA.query(api.Tasks.getTasks, { cardId });
+        const t2 = tasks.find((task) => task.taskDescription === "two")!;
+        await asA.mutation(api.Tasks.setDone, { id: t2._id, done: true });
+
+        await asA.mutation(api.Cards.changePhase, { id: cardId, phase: "Completed" });
+        const card = await asA.query(api.Cards.getCardById, { id: cardId });
+        expect(card?.phase).toBe("Completed");
+        expect(card?.everShipped).toBe(true);
+
+        const profile = await asA.query(api.Profile.getProfile, {});
+        expect(profile.xp).toBeGreaterThanOrEqual(50);
+    });
+
+    test("changePhase to Completed with zero tasks succeeds", async () => {
+        const { asA } = setup();
+        const cardId = await asA.mutation(api.Cards.addCard, {
+            title: "empty",
+            description: "",
+            phase: "Research",
+        });
+        await asA.mutation(api.Cards.changePhase, { id: cardId, phase: "Completed" });
+        const card = await asA.query(api.Cards.getCardById, { id: cardId });
+        expect(card?.phase).toBe("Completed");
+    });
+
+    test("moveCard to Completed enforces the same gate", async () => {
+        const { asA } = setup();
+        const cardId = await asA.mutation(api.Cards.addCard, {
+            title: "c",
+            description: "",
+            phase: "In Progress",
+        });
+        await asA.mutation(api.Tasks.addTask, {
+            cardId,
+            taskDescription: "one",
+            priority: 1,
+        });
+
+        await expect(
+            asA.mutation(api.Cards.moveCard, { id: cardId, toPhase: "Completed", order: 1 }),
+        ).rejects.toThrow("Complete or delete this project's unfinished tasks before finishing it.");
+
+        const tasks = await asA.query(api.Tasks.getTasks, { cardId });
+        await asA.mutation(api.Tasks.setDone, { id: tasks[0]._id, done: true });
+
+        await asA.mutation(api.Cards.moveCard, { id: cardId, toPhase: "Completed", order: 1 });
+        const card = await asA.query(api.Cards.getCardById, { id: cardId });
+        expect(card?.phase).toBe("Completed");
+    });
+
+    test("a Completed card cannot be moved back via changePhase or moveCard", async () => {
+        const { asA } = setup();
+        const cardId = await asA.mutation(api.Cards.addCard, {
+            title: "done",
+            description: "",
+            phase: "Research",
+        });
+        await asA.mutation(api.Cards.changePhase, { id: cardId, phase: "Completed" });
+
+        await expect(
+            asA.mutation(api.Cards.changePhase, { id: cardId, phase: "In Progress" }),
+        ).rejects.toThrow("This project is completed and locked");
+        await expect(
+            asA.mutation(api.Cards.moveCard, { id: cardId, toPhase: "Research", order: 1 }),
+        ).rejects.toThrow("This project is completed and locked");
+    });
+
+    test("updateCard on a Completed card throws locked", async () => {
+        const { asA } = setup();
+        const cardId = await asA.mutation(api.Cards.addCard, {
+            title: "done",
+            description: "",
+            phase: "Research",
+        });
+        await asA.mutation(api.Cards.changePhase, { id: cardId, phase: "Completed" });
+
+        await expect(
+            asA.mutation(api.Cards.updateCard, { id: cardId, title: "edited" }),
+        ).rejects.toThrow("This project is completed and locked");
+    });
+
+    test("setCardOrder rejects the whole batch if any card is Completed, and reorders nothing", async () => {
+        const { asA } = setup();
+        const active = await asA.mutation(api.Cards.addCard, {
+            title: "active",
+            description: "",
+            phase: "Research",
+        });
+        const completed = await asA.mutation(api.Cards.addCard, {
+            title: "completed",
+            description: "",
+            phase: "Research",
+        });
+        await asA.mutation(api.Cards.changePhase, { id: completed, phase: "Completed" });
+
+        await expect(
+            asA.mutation(api.Cards.setCardOrder, {
+                updates: [
+                    { id: active, order: 100 },
+                    { id: completed, order: 200 },
+                ],
+            }),
+        ).rejects.toThrow("This project is completed and locked");
+
+        const activeCard = await asA.query(api.Cards.getCardById, { id: active });
+        expect(activeCard?.order).not.toBe(100);
+    });
+
+    test("removeCard on a Completed card still succeeds and cascades", async () => {
+        const { t, asA } = setup();
+        const cardId = await asA.mutation(api.Cards.addCard, {
+            title: "done",
+            description: "",
+            phase: "Research",
+        });
+        const taskId = await asA.mutation(api.Tasks.addTask, {
+            cardId,
+            taskDescription: "t",
+            priority: 1,
+        });
+        await asA.mutation(api.Tasks.setDone, { id: taskId, done: true });
+        await asA.mutation(api.Cards.changePhase, { id: cardId, phase: "Completed" });
+
+        await asA.mutation(api.Cards.removeCard, { id: cardId });
+
+        expect(await asA.query(api.Cards.getCardById, { id: cardId })).toBeNull();
+        await t.run(async (ctx) => {
+            const tasks = await ctx.db.query("Tasks").collect();
+            expect(tasks).toHaveLength(0);
+        });
+    });
+});

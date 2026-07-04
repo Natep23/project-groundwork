@@ -4,6 +4,11 @@ import { useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import type { Phase } from "../convex/schema";
 import { PHASES } from "../components/card";
+
+// A card can't be *created* already finished: "Completed" is a locked terminal
+// state you can only reach through the gated, confirmed completion flow (which
+// also awards ship XP). So it's not offered as a starting phase.
+const START_PHASES: Phase[] = PHASES.filter((p) => p !== "Completed");
 import { ColorSwatches, DEFAULT_FLAG } from "../components/ColorSwatches";
 import { ArrowLeftIcon } from "../components/icons";
 import { useToast } from "../lib/toast";
@@ -80,7 +85,7 @@ export default function CreateCardScreen() {
           <div className="field">
             <label htmlFor="new-phase">Starting phase</label>
             <select id="new-phase" value={phase} onChange={(e) => setPhase(e.target.value as Phase)}>
-              {PHASES.map((p) => (
+              {START_PHASES.map((p) => (
                 <option key={p} value={p}>
                   {p}
                 </option>

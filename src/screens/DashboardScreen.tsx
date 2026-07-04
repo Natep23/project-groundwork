@@ -15,6 +15,7 @@ import {
   DragEndEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { ConvexError } from "convex/values";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
 import type { Phase } from "../convex/schema";
@@ -22,6 +23,7 @@ import { BoardCard, CardGhost, PHASES } from "../components/card";
 import { BoardColumn } from "../components/BoardColumn";
 import { BriefingBar } from "../components/BriefingBar";
 import { HQConsole } from "../components/HQConsole";
+import { ConfirmDeleteModal } from "../components/Modals";
 import { PlusIcon, SearchIcon } from "../components/icons";
 import { Loader } from "../components/Loader";
 import { useToast } from "../lib/toast";
@@ -94,6 +96,14 @@ export default function DashboardScreen() {
   // Local column snapshot held only for the duration of a drag gesture, so
   // reactive getBoard updates don't fight the in-flight reorder.
   const [dragColumns, setDragColumns] = React.useState<Columns | null>(null);
+  // Completing a project (from the → arrow or a cross-phase drag) is gated
+  // behind a blocking confirm; this stashes which card and which mutation
+  // call to run once the user confirms. Unifies both entry points through
+  // one modal.
+  const [pendingComplete, setPendingComplete] = React.useState<{
+    card: BoardCard;
+    run: () => void;
+  } | null>(null);
 
   const searchActive = query.trim().length > 0;
 
@@ -122,14 +132,29 @@ export default function DashboardScreen() {
   // While dragging use the local snapshot; otherwise the reactive board.
   const columns = dragColumns ?? byPhase;
 
-  const handleMove = async (id: Id<"Cards">, phase: Phase) => {
+  const runChangePhase = async (id: Id<"Cards">, phase: Phase) => {
     try {
       await changePhase({ id, phase, dayKey: localDayKey() });
       toast(`Moved to ${phase}`);
     } catch (err) {
       logger.error("changePhase failed", err);
-      toastError("Couldn't move the card. Try again.");
+      const message = err instanceof ConvexError ? String(err.data) : undefined;
+      toastError(message ?? "Couldn't move the card. Try again.");
     }
+  };
+
+  const handleMove = (id: Id<"Cards">, phase: Phase) => {
+    if (phase === "Completed") {
+      const card = (board ?? []).find((c) => c._id === id);
+      if (!card) return;
+      if (card.taskCount !== card.doneCount) {
+        toastError("Complete or delete this project's unfinished tasks before finishing it.");
+        return;
+      }
+      setPendingComplete({ card, run: () => void runChangePhase(id, "Completed") });
+      return;
+    }
+    void runChangePhase(id, phase);
   };
 
   const handleDelete = async (id: Id<"Cards">) => {
@@ -178,6 +203,25 @@ export default function DashboardScreen() {
       void setCardOrder({ updates: plan.updates }).catch((err) => {
         logger.error("setCardOrder failed", err);
         toastError("Couldn't reorder the cards. Try again.");
+      });
+    } else if (plan.toPhase === "Completed") {
+      // Completing via drag is gated + confirmed exactly like the → arrow.
+      // No mutation has run yet, so clearing dragColumns above already lets
+      // the reactive `byPhase` (unchanged) repaint the card back in place —
+      // nothing to revert here.
+      if (started.taskCount !== started.doneCount) {
+        toastError("Complete or delete this project's unfinished tasks before finishing it.");
+        return;
+      }
+      const { id, toPhase, order } = plan;
+      setPendingComplete({
+        card: started,
+        run: () =>
+          void moveCard({ id, toPhase, order, dayKey: localDayKey() }).catch((err) => {
+            logger.error("moveCard failed", err);
+            const message = err instanceof ConvexError ? String(err.data) : undefined;
+            toastError(message ?? "Couldn't move the card. Try again.");
+          }),
       });
     } else {
       void moveCard({
@@ -247,6 +291,18 @@ export default function DashboardScreen() {
         <DragOverlay>{activeCard && <CardGhost card={activeCard} />}</DragOverlay>
       </DndContext>
       {profile && <HQConsole open={hqOpen} profile={profile} onClose={() => setHqOpen(false)} />}
+      <ConfirmDeleteModal
+        open={pendingComplete !== null}
+        title="Complete this project?"
+        body={`Once completed, this project is locked — you won't be able to move it back or edit it (or its tasks), only delete it.`}
+        confirmLabel="Complete & lock"
+        tone="primary"
+        onConfirm={() => {
+          pendingComplete?.run();
+          setPendingComplete(null);
+        }}
+        onClose={() => setPendingComplete(null)}
+      />
     </main>
   );
 }

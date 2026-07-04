@@ -1,7 +1,14 @@
 import { query, mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { Phase, phaseValidator } from "./schema";
-import { applyEngagement, dayKeyFromTs, requireOwnedCard, requireUser } from "./helpers";
+import {
+    applyEngagement,
+    assertAllTasksComplete,
+    assertCardNotLocked,
+    dayKeyFromTs,
+    requireOwnedCard,
+    requireUser,
+} from "./helpers";
 import { Doc } from "./_generated/dataModel";
 import { MutationCtx } from "./_generated/server";
 
@@ -126,7 +133,8 @@ export const updateCard = mutation({
         color: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
-        await requireOwnedCard(ctx, args.id);
+        const card = await requireOwnedCard(ctx, args.id);
+        assertCardNotLocked(card);
         await ctx.db.patch(args.id, {
             ...(args.title !== undefined ? { title: validateTitle(args.title) } : {}),
             ...(args.description !== undefined
@@ -150,6 +158,13 @@ async function moveCardWithShipAward(
     order: number,
     dayKeyArg: string | undefined,
 ): Promise<void> {
+    // A card already in the Completed phase is locked: it can't be moved
+    // anywhere (including a reorder-only moveCard within the same phase).
+    // Check this before the completion gate below.
+    assertCardNotLocked(card);
+    if (toPhase === "Completed") {
+        await assertAllTasksComplete(ctx, card._id);
+    }
     const firstShip = toPhase === "Completed" && !card.everShipped;
     const ts = Date.now();
     await ctx.db.patch(card._id, {
@@ -194,7 +209,8 @@ export const setCardOrder = mutation({
     },
     handler: async (ctx, args) => {
         for (const update of args.updates) {
-            await requireOwnedCard(ctx, update.id);
+            const card = await requireOwnedCard(ctx, update.id);
+            assertCardNotLocked(card);
         }
         for (const update of args.updates) {
             await ctx.db.patch(update.id, { order: update.order });

@@ -104,9 +104,20 @@ type ConfirmDeleteProps = {
   confirmLabel: string;
   onConfirm: () => void;
   onClose: () => void;
+  /** "danger" (default) keeps the destructive red button; "primary" is for
+   * non-destructive-but-blocking confirmations (e.g. completing a project). */
+  tone?: "danger" | "primary";
 };
 
-export function ConfirmDeleteModal({ open, title, body, confirmLabel, onConfirm, onClose }: ConfirmDeleteProps) {
+export function ConfirmDeleteModal({
+  open,
+  title,
+  body,
+  confirmLabel,
+  onConfirm,
+  onClose,
+  tone = "danger",
+}: ConfirmDeleteProps) {
   if (!open) return null;
   return (
     <ModalShell title={title} onClose={onClose}>
@@ -115,7 +126,7 @@ export function ConfirmDeleteModal({ open, title, body, confirmLabel, onConfirm,
         <button className="btn" onClick={onClose}>
           Cancel
         </button>
-        <button className="btn btn--danger" onClick={onConfirm}>
+        <button className={tone === "danger" ? "btn btn--danger" : "btn btn--primary"} onClick={onConfirm}>
           {confirmLabel}
         </button>
       </div>

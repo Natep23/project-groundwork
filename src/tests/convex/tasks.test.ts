@@ -256,3 +256,56 @@ describe("behavior", () => {
         });
     });
 });
+
+describe("locked (Completed) card freezes its tasks", () => {
+    async function setupCompleted() {
+        const { t, asA, asB, cardId } = await setup();
+        const taskId = await asA.mutation(api.Tasks.addTask, {
+            cardId,
+            taskDescription: "seed",
+            priority: 1,
+        });
+        await asA.mutation(api.Tasks.setDone, { id: taskId, done: true });
+        await asA.mutation(api.Cards.changePhase, { id: cardId, phase: "Completed" });
+        return { t, asA, asB, cardId, taskId };
+    }
+
+    test("addTask on a Completed card's cardId throws locked", async () => {
+        const { asA, cardId } = await setupCompleted();
+        await expect(
+            asA.mutation(api.Tasks.addTask, {
+                cardId,
+                taskDescription: "new",
+                priority: 1,
+            }),
+        ).rejects.toThrow("This project is completed and locked");
+    });
+
+    test("setDone on a task of a Completed card throws locked", async () => {
+        const { asA, taskId } = await setupCompleted();
+        await expect(
+            asA.mutation(api.Tasks.setDone, { id: taskId, done: false }),
+        ).rejects.toThrow("This project is completed and locked");
+    });
+
+    test("updateTask on a task of a Completed card throws locked", async () => {
+        const { asA, taskId } = await setupCompleted();
+        await expect(
+            asA.mutation(api.Tasks.updateTask, { id: taskId, taskDescription: "edited" }),
+        ).rejects.toThrow("This project is completed and locked");
+    });
+
+    test("setOrder on a task of a Completed card throws locked", async () => {
+        const { asA, taskId } = await setupCompleted();
+        await expect(
+            asA.mutation(api.Tasks.setOrder, { updates: [{ id: taskId, order: 5 }] }),
+        ).rejects.toThrow("This project is completed and locked");
+    });
+
+    test("removeTask on a task of a Completed card throws locked", async () => {
+        const { asA, taskId } = await setupCompleted();
+        await expect(
+            asA.mutation(api.Tasks.removeTask, { id: taskId }),
+        ).rejects.toThrow("This project is completed and locked");
+    });
+});

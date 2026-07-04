@@ -45,6 +45,39 @@ export async function requireOwnedTask(
     return task;
 }
 
+/**
+ * A card whose current phase is "Completed" is a locked terminal state: it
+ * can no longer be moved, edited, or have its tasks mutated (delete is the
+ * only allowed action). Throws the same user-facing message used everywhere
+ * else this rule applies (Cards.ts + Tasks.ts).
+ */
+export function assertCardNotLocked(card: Doc<"Cards">): void {
+    if (card.phase === "Completed") {
+        throw new ConvexError(
+            "This project is completed and locked — you can only delete it.",
+        );
+    }
+}
+
+/**
+ * The completion gate: a card may only move into "Completed" if every task
+ * belonging to it is done (vacuously true for a card with zero tasks).
+ */
+export async function assertAllTasksComplete(
+    ctx: QueryCtx | MutationCtx,
+    cardId: Id<"Cards">,
+): Promise<void> {
+    const tasks = await ctx.db
+        .query("Tasks")
+        .withIndex("by_card", (q) => q.eq("cardId", cardId))
+        .collect();
+    if (tasks.some((task) => !task.done)) {
+        throw new ConvexError(
+            "Complete or delete this project's unfinished tasks before finishing it.",
+        );
+    }
+}
+
 /** Same ownership check as {@link requireOwnedCard}, for a research link. */
 export async function requireOwnedLink(
     ctx: QueryCtx | MutationCtx,

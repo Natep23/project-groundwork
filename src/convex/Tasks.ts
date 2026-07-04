@@ -1,7 +1,27 @@
 import { query, mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { priorityValidator } from "./schema";
-import { applyEngagement, dayKeyFromTs, requireOwnedCard, requireOwnedTask } from "./helpers";
+import {
+    applyEngagement,
+    assertCardNotLocked,
+    dayKeyFromTs,
+    requireOwnedCard,
+    requireOwnedTask,
+} from "./helpers";
+import { Doc } from "./_generated/dataModel";
+import { QueryCtx, MutationCtx } from "./_generated/server";
+
+/** Loads a task's parent card and asserts it isn't a locked Completed card. */
+async function assertParentCardNotLocked(
+    ctx: QueryCtx | MutationCtx,
+    task: Doc<"Tasks">,
+): Promise<void> {
+    const card = await ctx.db.get(task.cardId);
+    if (card === null) {
+        throw new ConvexError("Not found");
+    }
+    assertCardNotLocked(card);
+}
 
 const TASK_MAX = 500;
 
@@ -37,6 +57,7 @@ export const addTask = mutation({
     },
     handler: async (ctx, args) => {
         const card = await requireOwnedCard(ctx, args.cardId);
+        assertCardNotLocked(card);
         const existing = await ctx.db
             .query("Tasks")
             .withIndex("by_card", (q) => q.eq("cardId", args.cardId))
@@ -65,6 +86,7 @@ export const setDone = mutation({
     args: { id: v.id("Tasks"), done: v.boolean(), dayKey: v.optional(v.string()) },
     handler: async (ctx, args) => {
         const task = await requireOwnedTask(ctx, args.id);
+        await assertParentCardNotLocked(ctx, task);
         const ts = Date.now();
         if (args.done) {
             const firstCompletion = !task.everCompleted;
@@ -94,7 +116,8 @@ export const updateTask = mutation({
         priority: v.optional(priorityValidator),
     },
     handler: async (ctx, args) => {
-        await requireOwnedTask(ctx, args.id);
+        const task = await requireOwnedTask(ctx, args.id);
+        await assertParentCardNotLocked(ctx, task);
         await ctx.db.patch(args.id, {
             ...(args.taskDescription !== undefined
                 ? { taskDescription: validateTaskDescription(args.taskDescription) }
@@ -110,7 +133,8 @@ export const setOrder = mutation({
     },
     handler: async (ctx, args) => {
         for (const update of args.updates) {
-            await requireOwnedTask(ctx, update.id);
+            const task = await requireOwnedTask(ctx, update.id);
+            await assertParentCardNotLocked(ctx, task);
         }
         for (const update of args.updates) {
             await ctx.db.patch(update.id, { order: update.order });
@@ -121,7 +145,8 @@ export const setOrder = mutation({
 export const removeTask = mutation({
     args: { id: v.id("Tasks") },
     handler: async (ctx, args) => {
-        await requireOwnedTask(ctx, args.id);
+        const task = await requireOwnedTask(ctx, args.id);
+        await assertParentCardNotLocked(ctx, task);
         const links = await ctx.db
             .query("ResearchLinks")
             .withIndex("by_task", (q) => q.eq("taskId", args.id))

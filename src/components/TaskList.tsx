@@ -128,13 +128,14 @@ function TaskDetail({ task }: { task: Task }) {
   );
 }
 
-function TaskRow({ task }: { task: Task }) {
+function TaskRow({ task, locked = false }: { task: Task; locked?: boolean }) {
   const setDone = useMutation(api.Tasks.setDone);
   const removeTask = useMutation(api.Tasks.removeTask);
   const { toast, toastError } = useToast();
   const [expanded, setExpanded] = React.useState(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task._id,
+    disabled: locked,
   });
 
   const handleToggle = async (done: boolean) => {
@@ -168,6 +169,7 @@ function TaskRow({ task }: { task: Task }) {
         <button
           className="icon-btn task-row__handle"
           aria-label={`Reorder task: ${task.taskDescription}`}
+          disabled={locked}
           {...attributes}
           {...listeners}
         >
@@ -177,6 +179,7 @@ function TaskRow({ task }: { task: Task }) {
           type="checkbox"
           className="task-check"
           checked={task.done}
+          disabled={locked}
           onChange={(e) => void handleToggle(e.target.checked)}
           aria-label={`Mark "${task.taskDescription}" ${task.done ? "not done" : "done"}`}
           {...stopDragActivation}
@@ -189,6 +192,7 @@ function TaskRow({ task }: { task: Task }) {
           aria-controls={detailId}
           aria-label={expanded ? "Collapse task details" : "Expand task details"}
           onClick={() => setExpanded((e) => !e)}
+          disabled={locked}
           {...stopDragActivation}
         >
           <span className={`task-row__chevron${expanded ? " task-row__chevron--open" : ""}`} aria-hidden="true">
@@ -199,12 +203,13 @@ function TaskRow({ task }: { task: Task }) {
           className="icon-btn icon-btn--danger"
           aria-label="Delete task"
           onClick={() => void handleDelete()}
+          disabled={locked}
           {...stopDragActivation}
         >
           <TrashIcon />
         </button>
       </div>
-      {expanded && (
+      {expanded && !locked && (
         <div id={detailId}>
           <TaskDetail task={task} />
         </div>
@@ -213,7 +218,7 @@ function TaskRow({ task }: { task: Task }) {
   );
 }
 
-export function TaskList({ cardId }: { cardId: Id<"Cards"> }) {
+export function TaskList({ cardId, locked = false }: { cardId: Id<"Cards">; locked?: boolean }) {
   const tasks = useQuery(api.Tasks.getTasks, { cardId });
   const addTask = useMutation(api.Tasks.addTask);
   const setOrder = useMutation(api.Tasks.setOrder).withOptimisticUpdate((localStore, args) => {
@@ -252,7 +257,7 @@ export function TaskList({ cardId }: { cardId: Id<"Cards"> }) {
   };
 
   const onDragEnd = (e: DragEndEvent) => {
-    if (!tasks || !e.over || e.active.id === e.over.id) return;
+    if (locked || !tasks || !e.over || e.active.id === e.over.id) return;
     const oldIndex = tasks.findIndex((t) => t._id === e.active.id);
     const newIndex = tasks.findIndex((t) => t._id === e.over!.id);
     if (oldIndex < 0 || newIndex < 0) return;
@@ -288,34 +293,36 @@ export function TaskList({ cardId }: { cardId: Id<"Cards"> }) {
             <SortableContext items={tasks.map((t) => t._id)} strategy={verticalListSortingStrategy}>
               <ul className="task-list">
                 {tasks.map((task) => (
-                  <TaskRow key={task._id} task={task} />
+                  <TaskRow key={task._id} task={task} locked={locked} />
                 ))}
               </ul>
             </SortableContext>
           </DndContext>
         )}
-        <form className="add-row" onSubmit={handleAdd}>
-          <input
-            type="text"
-            placeholder="Add a task…"
-            aria-label="New task description"
-            value={description}
-            maxLength={500}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <select
-            aria-label="Priority"
-            value={priority}
-            onChange={(e) => setPriority(Number(e.target.value) as Priority)}
-          >
-            <option value={1}>High</option>
-            <option value={2}>Med</option>
-            <option value={3}>Low</option>
-          </select>
-          <button type="submit" className="btn" disabled={!description.trim()}>
-            <PlusIcon /> Add
-          </button>
-        </form>
+        {!locked && (
+          <form className="add-row" onSubmit={handleAdd}>
+            <input
+              type="text"
+              placeholder="Add a task…"
+              aria-label="New task description"
+              value={description}
+              maxLength={500}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <select
+              aria-label="Priority"
+              value={priority}
+              onChange={(e) => setPriority(Number(e.target.value) as Priority)}
+            >
+              <option value={1}>High</option>
+              <option value={2}>Med</option>
+              <option value={3}>Low</option>
+            </select>
+            <button type="submit" className="btn" disabled={!description.trim()}>
+              <PlusIcon /> Add
+            </button>
+          </form>
+        )}
       </div>
     </section>
   );

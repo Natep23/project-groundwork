@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, act } from "@testing-library/react";
+import { render, act, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { ToastProvider } from "../../lib/toast";
 import { ThemeProvider } from "../../lib/theme";
@@ -108,7 +109,8 @@ describe("DashboardScreen drag-and-drop mapping", () => {
     ]);
   });
 
-  it("cross-column drag persists via a single moveCard with a dayKey (not setCardOrder)", () => {
+  it("cross-column drag into Completed routes through the confirm modal, then persists via moveCard with a dayKey", async () => {
+    const user = userEvent.setup();
     const p1 = card("p1", "In Progress", 1);
     convex.board = [card("r1", "Research", 1), p1];
     renderBoard();
@@ -117,12 +119,32 @@ describe("DashboardScreen drag-and-drop mapping", () => {
     act(() => dnd.handlers.onDragOver(over("p1", "Completed")));
     act(() => dnd.handlers.onDragEnd(over("p1", "Completed")));
 
+    // Nothing persists until the blocking confirm is accepted.
+    expect(convex.calls.length).toBe(0);
+    const dialog = await screen.findByRole("dialog", { name: "Complete this project?" });
+    await user.click(within(dialog).getByRole("button", { name: "Complete & lock" }));
+
     const reorder = convex.calls.find((c) => Array.isArray(c.updates));
     const move = convex.calls.find((c) => typeof c.toPhase === "string");
     expect(reorder).toBeUndefined();
     expect(move).toMatchObject({ id: "p1", toPhase: "Completed" });
     expect(typeof move?.order).toBe("number");
     expect(move?.dayKey).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("cross-column drag into Completed with unfinished tasks toasts instead of opening the confirm", () => {
+    const p1 = card("p1", "In Progress", 1) as AnyCard;
+    p1.taskCount = 2;
+    p1.doneCount = 1;
+    convex.board = [card("r1", "Research", 1), p1];
+    renderBoard();
+
+    act(() => dnd.handlers.onDragStart(start("p1", p1)));
+    act(() => dnd.handlers.onDragOver(over("p1", "Completed")));
+    act(() => dnd.handlers.onDragEnd(over("p1", "Completed")));
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(convex.calls.length).toBe(0);
   });
 
   it("dropping in place persists nothing", () => {
