@@ -31,13 +31,27 @@ From cheapest to most capable: **Haiku → Sonnet → Opus → Fable**.
 
 Always assign a task to the lowest tier that can do it well. Low-level/quick tasks (doc updates, quick string changes, config tweaks) skip the whole process below — assign them directly to a low-cost model at any time. Work in parallel as much as possible.
 
+### The Infinite Mind curriculum (enhanced Sonnet/Opus)
+
+The Obsidian vault `GroundWork - Agentic/` holds "The Infinite Mind": a Fable-authored, A/B-validated curriculum (see `GroundWork - Agentic/Tests/Test Results.md`) that measurably improves Sonnet's and Opus's request processing, edge-case discovery, planning, and calibration while preserving each model's identity. It is applied at three cost levels, chosen at assignment time and recorded on each workstream's `Recommended subagent:` line (e.g. `Sonnet (L1)`):
+
+- **L0 — none.** Haiku-tier and trivial/mechanical tasks. No curriculum.
+- **L1 — field card inlined (the default for Sonnet/Opus workstreams).** The orchestrator pastes the model's field card (`GroundWork - Agentic/Sonnet/Sonnet — Field Card.md` or `Opus/Opus — Field Card.md`) **verbatim at the top of the subagent's prompt**, task below it. Costs zero reads/tool calls, and the byte-identical prefix makes repeated spawns prompt-cache-friendly (never paraphrase or trim the card per-task).
+- **L2 — full vault read.** Novel/cross-cutting work and planning: the prompt starts with — read `GroundWork - Agentic/Home.md`, then your lesson plan and every note it links, and apply it as binding. Self-rescue is also L2 but reads only the 2–3 stuck-relevant notes.
+
+Cost norms (doctrine in `GroundWork - Agentic/Core/Cost Discipline.md`): batch several small same-model workstreams into **one** continued agent instead of spawning per task; agents never re-read docs already in their context; keep this file a **map, not a manual** (deep detail goes in scoped docs like `src/CLAUDE.md` — every paragraph here is a tax on every agent); if an L1 task's curriculum overhead exceeds ~10–15% of comparable baseline cost per the end-of-task metrics, downgrade that task class a level.
+
+**Known side effect:** enhanced Sonnet may over-trim v1 scope; check its stated out-of-scope list.
+
 ### Escalation (only when truly stuck)
+
+**Self-rescue before escalation.** Escalation costs money, so the curriculum is the first resort: before consulting the tier above, a stuck **Sonnet** re-reads its Infinite Mind lesson plan and specialization notes (`Sonnet — Slow Down at Junctions` Junction 3, `Calibrated Confidence`) and re-derives from what it *knows* vs. what it *assumed*; only if still stuck after that does it go to Opus. Likewise a stuck **Opus** re-reads its lesson plan (`Opus — Decisiveness`, `Calibrated Confidence`) and attempts a re-plan before contacting Fable. When a model does escalate after self-rescue, it says so and brings the write-up (what it knows, what it tried, its position) — that write-up is the escalation package. Haiku has no curriculum track; it escalates to Sonnet directly.
 
 A model consults **exactly one tier up**, and only when genuinely stuck — never for routine confirmation, because escalation costs money. The only advice a model takes is from the next tier:
 
 - Haiku → Sonnet
-- Sonnet → Opus
-- Opus → Fable
+- Sonnet → curriculum self-rescue → Opus
+- Opus → curriculum self-rescue → Fable
 
 **Only Opus may contact Fable.** Sonnet/Haiku never reach Fable directly — if something needs Fable, it travels up the chain to Opus first.
 
@@ -49,13 +63,13 @@ The **one** exception is **Opus → Fable**: if Opus genuinely doubts Fable's gu
 
 1. **Plan (Opus).** Opus writes the plan(s), one unit of work per file/section, each ending with a blank **`Recommended subagent:`** line left for Fable to fill.
 2. **Plan review + model assignment (Fable).** Opus passes the plan to Fable, which reviews it and fills in the recommended subagent/model for each workstream. (Opus is the only tier that may invoke Fable.)
-3. **Execute.** The assigned models implement their workstreams, escalating only per the chain above. Verify between workstreams (typecheck + tests + build).
+3. **Execute.** The assigned models implement their workstreams at their assigned curriculum level (L1 field-card-inlined by default; see above), escalating only per the chain above (self-rescue first). Verify between workstreams (typecheck + tests + build).
 4. **Pre-Fable code review (Opus).** Before any final review, Opus does a quick review of *all* the code produced — this quality gate is mandatory and is what Opus hands to Fable.
 5. **Final review (Fable).** Fable does the autonomous quality-check review. Opus **trusts and applies** Fable's findings, re-verifies (typecheck + tests + build), then commits. Opus only questions a finding under the Opus → Fable rule above (≤2 questions per topic, then escalate to the user) — it does not silently overrule Fable.
 
 ### End-of-task report (required)
 
-At the end of every task — planned or quick — close with a **feature chart**: a table of what was added/changed, each with a brief explanation, plus as much execution detail as available. Include, at minimum: per-workstream **tokens used** and **time spent** (from each subagent's completion metrics: `subagent_tokens`, `tool_uses`, `duration_ms`), the model that did the work, tests added/passing, and a totals row. Give the most detail the run makes available.
+At the end of every task — planned or quick — close with a **feature chart**: a table of what was added/changed, each with a brief explanation, plus as much execution detail as available. Include, at minimum: per-workstream **tokens used** and **time spent** (from each subagent's completion metrics: `subagent_tokens`, `tool_uses`, `duration_ms`), the model that did the work, **the curriculum level it ran at (L0/L1/L2)**, tests added/passing, and a totals row. Give the most detail the run makes available — these metrics are what the Cost Discipline downgrade rule keys off.
 
 ## Architecture
 
